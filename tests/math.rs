@@ -554,3 +554,17 @@ fn test_medium_intersect() {
         egraph3.add_expr(&"(+ (* k pi) (* k pi))".parse().unwrap())
     );
 }
+
+#[cfg(feature = "iai-callgrind")]
+iai_callgrind::library_benchmark_group!(
+    name = math;
+    benchmarks = math_associate_adds, math_simplify_add, math_powers, math_simplify_const, math_simplify_root,
+    math_simplify_factor, math_diff_same, math_diff_different, math_diff_simple1, math_diff_simple2, math_diff_ln,
+    diff_power_simple, diff_power_harder, integ_one, integ_sin, integ_x, integ_part1, integ_part2, integ_part3,
+);
+
+#[cfg(feature = "iai-callgrind")]
+iai_callgrind::main!(
+    config = iai_callgrind::LibraryBenchmarkConfig::default().flamegraph(iai_callgrind::FlamegraphConfig::default().min_width(0f64));
+    library_benchmark_groups = math
+);
