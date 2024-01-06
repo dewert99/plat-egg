@@ -245,7 +245,7 @@ where
 /// }
 /// ```
 #[macro_export]
-#[cfg(not(feature = "iai-callgrind"))]
+#[cfg(not(feature = "codspeed-criterion-compat"))]
 macro_rules! test_fn {
     (
         $(#[$meta:meta])*
@@ -275,7 +275,7 @@ macro_rules! test_fn {
 }
 
 #[macro_export]
-#[cfg(feature = "iai-callgrind")]
+#[cfg(feature = "codspeed-criterion-compat")]
 macro_rules! test_fn {
     (
         $(#[$meta:meta])*
@@ -288,30 +288,25 @@ macro_rules! test_fn {
     ) => {
 
     // $(#[$meta])*
-    #[::iai_callgrind::library_benchmark]
-    #[bench::without_explainations(stringify!($name), false, None$(.or(Some($runner)))?.unwrap_or_default(),
-        &$rules, $start.parse().unwrap(), &[$( $goal.parse().unwrap() ),+], None $(.or(Some($check_fn)))?,)]
-    #[bench::with_explainations(stringify!($name), true, None$(.or(Some($runner)))?.unwrap_or_default(),
-        &$rules, $start.parse().unwrap(), &[$( $goal.parse().unwrap() ),+], None $(.or(Some($check_fn)))?,)]
-    pub fn $name<L, A>(
-        name: &str,
-        exp: bool,
-        runner: $crate::Runner<L, A, ()>,
-        rules: &[$crate::Rewrite<L, A>],
-        start: $crate::RecExpr<L>,
-        goals: &[$crate::Pattern<L>],
-        check_fn: ::core::option::Option<fn($crate::Runner<L, A, ()>)>,
-    ) where
-        L: $crate::Language + ::core::fmt::Display + $crate::FromOp + 'static,
-        A: $crate::Analysis<L> + ::core::default::Default,
-    {
-        let runner = runner.with_time_limit(::instant::Duration::from_secs(3600));
-        let runner = if exp {
-            runner.with_explanations_enabled()
-        } else {
-            runner.with_explanations_disabled()
-        };
-        $crate::test::test_runner(name, runner, rules, start, goals, check_fn, false)
+    pub fn $name(criterion: &mut Criterion) {
+        let name = stringify!($name);
+        let runner = || -> $crate::Runner<_, _> {None$(.or(Some($runner)))?.unwrap_or_default()};
+        let rules = &$rules;
+        let start: $crate::RecExpr<_> = $start.parse().unwrap();
+        let goals: &[$crate::Pattern<_>] = &[$( $goal.parse().unwrap() ),+];
+        let check_fn: Option<fn($crate::Runner<_, _>)> = None $(.or(Some($check_fn)))?;
+        let test = |runner| $crate::test::test_runner(name, runner, rules, start.clone(), goals, check_fn, false);
+        let mut b = criterion.benchmark_group(name);
+        b.bench_function("without explanation", |b| {
+            b.iter(|| test(runner().with_explanations_disabled()))
+        });
+        b.bench_function("with unoptimized explanation", |b| {
+            b.iter(|| test(runner().with_explanations_enabled().without_explanation_length_optimization()))
+        });
+        b.bench_function("with optimized explanation", |b| {
+            b.iter(|| test(runner().with_explanations_enabled().with_explanation_length_optimization()))
+        });
+        b.finish()
     }
 
     };

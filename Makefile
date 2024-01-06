@@ -13,13 +13,13 @@ nits:
 	rustup component add rustfmt clippy
 	cargo fmt -- --check
 	cargo clean --doc
-	cargo doc --no-deps --all-features
+	cargo doc --no-deps --features "all"
 	cargo deadlinks
 
 	cargo clippy --tests
 	cargo clippy --tests --features "test-explanations"
 	cargo clippy --tests --features "serde-1"
-	cargo clippy --tests --all-features
+	cargo clippy --tests --features "all"
 
 .PHONY: docs
 docs:

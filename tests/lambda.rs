@@ -402,15 +402,16 @@ fn lambda_ematching_bench() {
     egg::test::bench_egraph("lambda", rules(), exprs, extra_patterns);
 }
 
-#[cfg(feature = "iai-callgrind")]
-iai_callgrind::library_benchmark_group!(
+#[cfg(feature = "codspeed-criterion-compat")]
+use codspeed_criterion_compat::{criterion_group, criterion_main, Criterion};
+
+#[cfg(feature = "codspeed-criterion-compat")]
+criterion_group!(
     name = lambda;
-    benchmarks = lambda_under, lambda_if_elim, lambda_let_simple, lambda_compose, lambda_if_simple, lambda_compose_many,
-    //lambda_function_repeat, lambda_if, lambda_fib,
+    config = Criterion::default();
+    targets = lambda_under, lambda_if_elim, lambda_let_simple, lambda_compose, lambda_if_simple, lambda_compose_many,
+    lambda_function_repeat, lambda_if, lambda_fib
 );
 
-#[cfg(feature = "iai-callgrind")]
-iai_callgrind::main!(
-    config = iai_callgrind::LibraryBenchmarkConfig::default().flamegraph(iai_callgrind::FlamegraphConfig::default().min_width(0f64));
-    library_benchmark_groups = lambda
-);
+#[cfg(feature = "codspeed-criterion-compat")]
+criterion_main!(lambda);

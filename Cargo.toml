@@ -34,7 +34,7 @@ serde_json = { version = "1.0.81", optional = true }
 saturating = "0.1.0"
 
 # for benchmarking
-iai-callgrind = { version = "0.9.0", optional = true }
+codspeed-criterion-compat = { version = "2.3.3", optional = true }
 
 
 
@@ -54,8 +54,10 @@ serde-1 = [
   "vectorize",
 ]
 wasm-bindgen = ["instant/wasm-bindgen"]
+# use instead of --all-features to avoid private features
+all = ["deterministic", "lp", "reports", "serde-1", "wasm-bindgen"]
 
-# private features for testing
+# private features for testing/benchmarking
 test-explanations = []
 
 [package.metadata.docs.rs]
@@ -69,11 +71,9 @@ debug = true
 [[bench]]
 name = "lambda"
 path = "tests/lambda.rs"
-required-features = ["iai-callgrind"]
 harness = false
 
 [[bench]]
 name = "math"
 path = "tests/math.rs"
-required-features = ["iai-callgrind"]
 harness = false

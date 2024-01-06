@@ -26,3 +26,28 @@ jobs:
         cargo deadlinks --version
     - name: Nits
       run: make nits
+  codspeed:
+    runs-on: ubuntu-latest
+    needs: [ test, nits ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup rust toolchain, cache and cargo-codspeed binary
+        uses: moonrepo/setup-rust@v0
+        with:
+          channel: 1.76.0
+          cache-target: release
+          bins: cargo-codspeed
+
+      - name: Build the benchmark target(s)
+        run: cargo +1.76.0 codspeed build --features codspeed-criterion-compat
+
+      - name: Run the benchmarks
+        uses: CodSpeedHQ/action@v2
+        with:
+          token: ${{ secrets.CODSPEED_TOKEN }}
+          run: cargo codspeed run
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
