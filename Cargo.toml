@@ -66,6 +66,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [profile.bench]
 inherits = "release"
+codegen-units = 1
+panic = "abort"
+lto = true
 debug = true
 
 [[bench]]
