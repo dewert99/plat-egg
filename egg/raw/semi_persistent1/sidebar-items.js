@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["PushInfo","Stored information required to restore the egraph to a previous state"],["UndoLog","Value for [`UndoLogT`] that enables `push1` and `raw_pop1`"]]};
