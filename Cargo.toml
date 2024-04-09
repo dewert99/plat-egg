@@ -40,6 +40,7 @@ env_logger = { version = "0.9.0", default-features = false }
 [features]
 # forces the use of indexmaps over hashmaps
 deterministic = ["indexmap"]
+default = ["egg_compat"]
 egg_compat = ["indexmap", "instant", "symbol_table", "symbolic_expressions", "thiserror"]
 lp = ["coin_cbc"]
 reports = ["serde-1", "serde_json"]
