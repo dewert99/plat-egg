@@ -1,4 +1,5 @@
 use coin_cbc::{Col, Model, Sense};
+use no_std_compat::prelude::v1::*;
 
 use crate::*;
 
@@ -246,6 +247,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{SymbolLang as S, *};
+    use no_std_compat::prelude::v1::*;
 
     #[test]
     fn simple_lp_extract_two() {

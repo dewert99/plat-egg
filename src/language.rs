@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::ops::BitOr;
 use std::{cmp::Ordering, convert::TryFrom};
 use std::{

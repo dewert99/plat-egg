@@ -351,6 +351,7 @@ macro_rules! __rewrite {
 
 #[cfg(test)]
 mod tests {
+    use no_std_compat::prelude::v1::*;
 
     use crate::*;
 

@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use pattern::apply_pat;
 use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
@@ -547,6 +548,7 @@ where
 mod tests {
 
     use crate::{SymbolLang as S, *};
+    use no_std_compat::prelude::v1::*;
     use std::str::FromStr;
 
     type EGraph = crate::EGraph<S, ()>;

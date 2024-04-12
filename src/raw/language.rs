@@ -1,4 +1,5 @@
 use crate::Id;
+use no_std_compat::prelude::v1::*;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{Index, IndexMut};

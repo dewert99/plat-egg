@@ -1,6 +1,6 @@
 pub(crate) use hashmap::*;
 
-pub(crate) type BuildHasher = fxhash::FxBuildHasher;
+pub(crate) type BuildHasher = std::hash::BuildHasherDefault<rustc_hash::FxHasher>;
 
 #[cfg(feature = "deterministic")]
 mod hashmap {

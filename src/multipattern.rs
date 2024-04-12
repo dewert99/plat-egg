@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -198,6 +199,7 @@ impl<L: Language, A: Analysis<L>> Applier<L, A> for MultiPattern<L> {
 #[cfg(test)]
 mod tests {
     use crate::{SymbolLang as S, *};
+    use no_std_compat::prelude::v1::*;
 
     type EGraph = crate::EGraph<S, ()>;
 

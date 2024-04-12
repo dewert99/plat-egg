@@ -12,15 +12,16 @@ version = "0.9.5"
 rust-version = "1.63.0"
 
 [dependencies]
-fxhash = "0.2.1"
+rustc-hash = {version = "1.1.0", default-features = false}
 hashbrown = { version = "0.14.3", default-features = false, features = ["inline-more"] }
 indexmap = { version = "1.8.1", optional = true }
 instant = { version = "0.1.12" , optional = true}
-log = "0.4.17"
+log = { version = "0.4.17", default-features = false }
 smallvec = { version = "1.8.0", features = ["union", "const_generics"] }
 symbol_table = { version = "0.3.0", features = ["global"], optional = true }
 symbolic_expressions = { version = "5.0.3", optional = true }
 thiserror = { version = "1.0.31" , optional = true }
+no-std-compat = {version = "0.4.1", features = ["alloc"]}
 
 # for the lp feature
 coin_cbc = { version = "0.1.6", optional = true }
@@ -41,7 +42,9 @@ env_logger = { version = "0.9.0", default-features = false }
 # forces the use of indexmaps over hashmaps
 deterministic = ["indexmap"]
 default = ["egg_compat"]
-egg_compat = ["indexmap", "instant", "symbol_table", "symbolic_expressions", "thiserror"]
+# TODO expand no-std
+egg_compat = ["indexmap", "instant", "symbol_table", "symbolic_expressions", "thiserror", "std"]
+std = ["no-std-compat/std"]
 lp = ["coin_cbc"]
 reports = ["serde-1", "serde_json"]
 serde-1 = [

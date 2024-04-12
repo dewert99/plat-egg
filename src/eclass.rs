@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::fmt::{Debug, Formatter};
 use std::iter::ExactSizeIterator;
 

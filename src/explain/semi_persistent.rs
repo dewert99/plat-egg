@@ -1,6 +1,7 @@
 use crate::explain::{Connection, Explain};
 use crate::raw::EGraphResidual;
 use crate::{Id, Language};
+use no_std_compat::prelude::v1::*;
 
 pub(super) type UndoLog = Option<Vec<Id>>;
 

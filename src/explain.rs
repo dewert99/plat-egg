@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 mod semi_persistent;
 pub(crate) use semi_persistent::PushInfo;
 
@@ -1947,6 +1948,7 @@ impl<'x, L: Language, D, U> ExplainWith<'x, L, &'x RawEGraph<L, D, U>> {
 mod tests {
 
     use super::super::*;
+    use no_std_compat::prelude::v1::*;
 
     #[test]
     fn simple_explain() {

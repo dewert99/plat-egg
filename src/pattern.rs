@@ -1,5 +1,6 @@
 use fmt::Formatter;
 use log::*;
+use no_std_compat::prelude::v1::*;
 use std::borrow::Cow;
 use std::fmt::{self, Display};
 use std::{convert::TryFrom, str::FromStr};
@@ -431,6 +432,7 @@ pub(crate) fn apply_pat<L: Language, A: Analysis<L>>(
 
 #[cfg(test)]
 mod tests {
+    use no_std_compat::prelude::v1::*;
 
     use crate::{SymbolLang as S, *};
 
