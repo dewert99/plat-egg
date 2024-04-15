@@ -240,6 +240,14 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
 </pre><pre class="rust"><code><span class="doccomment">/*!
 EGraph visualization with [GraphViz]
 
@@ -248,10 +256,8 @@ Use the [`Dot`] struct to visualize an [`EGraph`](crate::EGraph)
 [GraphViz]: https://graphviz.gitlab.io/
 !*/</span>
 
-<span class="kw">use</span> <span class="ident">std::ffi::OsStr</span>;
+<span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>, <span class="ident">Formatter</span>};
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="prelude-ty">Result</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">raw::EGraphResidual</span>, <span class="ident">raw::Language</span>};
 
@@ -305,13 +311,6 @@ instead of to its own eclass.
 <span class="kw">where</span>
     <span class="ident">L</span>: <span class="ident">Language</span> <span class="op">+</span> <span class="ident">Display</span>,
 {
-    <span class="doccomment">/// Writes the `Dot` to a .dot file with the given filename.</span>
-    <span class="doccomment">/// Does _not_ require a `dot` binary.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">std::fs::File::create</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(<span class="ident">file</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>)
-    }
-
     <span class="doccomment">/// Adds a line to the dot output.</span>
     <span class="doccomment">/// Indentation and a newline will be added automatically.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_config_line</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">line</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
@@ -323,73 +322,6 @@ instead of to its own eclass.
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_anchors</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">use_anchors</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">use_anchors</span> <span class="op">=</span> <span class="ident">use_anchors</span>;
         <span class="self">self</span>
-    }
-
-    <span class="doccomment">/// Renders the `Dot` to a .png file with the given filename.</span>
-    <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_png</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tpng&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
-    }
-
-    <span class="doccomment">/// Renders the `Dot` to a .svg file with the given filename.</span>
-    <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_svg</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tsvg&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
-    }
-
-    <span class="doccomment">/// Renders the `Dot` to a .pdf file with the given filename.</span>
-    <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tpdf&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
-    }
-
-    <span class="doccomment">/// Invokes `dot` with the given arguments, piping this formatted</span>
-    <span class="doccomment">/// `Dot` into stdin.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_dot</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">args</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
-        <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">S</span><span class="op">&gt;</span>,
-    {
-        <span class="self">self</span>.<span class="ident">run</span>(<span class="string">&quot;dot&quot;</span>, <span class="ident">args</span>)
-    }
-
-    <span class="doccomment">/// Invokes some program with the given arguments, piping this</span>
-    <span class="doccomment">/// formatted `Dot` into stdin.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Can be used to run a different binary than `dot`:</span>
-    <span class="doccomment">/// ```no_run</span>
-    <span class="doccomment">/// # use egg::*;</span>
-    <span class="doccomment">/// # let mut egraph: EGraph&lt;SymbolLang, ()&gt; = Default::default();</span>
-    <span class="doccomment">/// egraph.dot().run(</span>
-    <span class="doccomment">///     &quot;/path/to/my/dot&quot;,</span>
-    <span class="doccomment">///     &amp;[&quot;arg1&quot;, &quot;-o&quot;, &quot;outfile&quot;]</span>
-    <span class="doccomment">/// ).unwrap();</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">S1</span>, <span class="ident">S2</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">program</span>: <span class="ident">S1</span>, <span class="ident">args</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">S1</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
-        <span class="ident">S2</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
-        <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">S2</span><span class="op">&gt;</span>,
-    {
-        <span class="kw">use</span> <span class="ident">std::process</span>::{<span class="ident">Command</span>, <span class="ident">Stdio</span>};
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">program</span>)
-            .<span class="ident">args</span>(<span class="ident">args</span>)
-            .<span class="ident">stdin</span>(<span class="ident">Stdio::piped</span>())
-            .<span class="ident">stdout</span>(<span class="ident">Stdio::null</span>())
-            .<span class="ident">spawn</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">child</span>.<span class="ident">stdin</span>.<span class="ident">as_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to open stdin&quot;</span>);
-        <span class="macro">write!</span>(<span class="ident">stdin</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="ident">child</span>.<span class="ident">wait</span>()<span class="question-mark">?</span>.<span class="ident">code</span>() {
-            <span class="prelude-val">Some</span>(<span class="number">0</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Some</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(
-                <span class="ident">ErrorKind::Other</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;dot program returned error code {}&quot;</span>, <span class="ident">e</span>),
-            )),
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(
-                <span class="ident">ErrorKind::Other</span>,
-                <span class="string">&quot;dot program was killed by a signal&quot;</span>,
-            )),
-        }
     }
 
     <span class="comment">// gives back the appropriate label and anchor</span>
@@ -407,6 +339,90 @@ instead of to its own eclass.
             (<span class="number">3</span>, <span class="number">1</span>) =&gt; (<span class="ident">s</span>(<span class="string">&quot;:s&quot;</span>), <span class="ident">s</span>(<span class="string">&quot;&quot;</span>)),
             (<span class="number">3</span>, <span class="number">2</span>) =&gt; (<span class="ident">s</span>(<span class="string">&quot;:se&quot;</span>), <span class="ident">s</span>(<span class="string">&quot;&quot;</span>)),
             (<span class="kw">_</span>, <span class="kw">_</span>) =&gt; (<span class="ident">s</span>(<span class="string">&quot;&quot;</span>), <span class="macro">format!</span>(<span class="string">&quot;label={}&quot;</span>, <span class="ident">i</span>)),
+        }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">std_only</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">std::ffi::OsStr</span>;
+    <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="prelude-ty">Result</span>, <span class="ident">Write</span>};
+    <span class="kw">use</span> <span class="ident">std::path::Path</span>;
+
+    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span>: <span class="ident">Language</span> <span class="op">+</span> <span class="ident">Display</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> {
+        <span class="doccomment">/// Writes the `Dot` to a .dot file with the given filename.</span>
+        <span class="doccomment">/// Does _not_ require a `dot` binary.</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">std::fs::File::create</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(<span class="ident">file</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>)
+        }
+
+        <span class="doccomment">/// Renders the `Dot` to a .png file with the given filename.</span>
+        <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_png</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+            <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tpng&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
+        }
+
+        <span class="doccomment">/// Renders the `Dot` to a .svg file with the given filename.</span>
+        <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_svg</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+            <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tsvg&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
+        }
+
+        <span class="doccomment">/// Renders the `Dot` to a .pdf file with the given filename.</span>
+        <span class="doccomment">/// Requires a `dot` binary to be on your `$PATH`.</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filename</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+            <span class="self">self</span>.<span class="ident">run_dot</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-Tpdf&quot;</span>.<span class="ident">as_ref</span>(), <span class="string">&quot;-o&quot;</span>.<span class="ident">as_ref</span>(), <span class="ident">filename</span>.<span class="ident">as_ref</span>()])
+        }
+
+        <span class="doccomment">/// Invokes `dot` with the given arguments, piping this formatted</span>
+        <span class="doccomment">/// `Dot` into stdin.</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_dot</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">args</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+        <span class="kw">where</span>
+            <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
+            <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">S</span><span class="op">&gt;</span>,
+        {
+            <span class="self">self</span>.<span class="ident">run</span>(<span class="string">&quot;dot&quot;</span>, <span class="ident">args</span>)
+        }
+
+        <span class="doccomment">/// Invokes some program with the given arguments, piping this</span>
+        <span class="doccomment">/// formatted `Dot` into stdin.</span>
+        <span class="doccomment">///</span>
+        <span class="doccomment">/// Can be used to run a different binary than `dot`:</span>
+        <span class="doccomment">/// ```no_run</span>
+        <span class="doccomment">/// # use egg::*;</span>
+        <span class="doccomment">/// # let mut egraph: EGraph&lt;SymbolLang, ()&gt; = Default::default();</span>
+        <span class="doccomment">/// egraph.dot().run(</span>
+        <span class="doccomment">///     &quot;/path/to/my/dot&quot;,</span>
+        <span class="doccomment">///     &amp;[&quot;arg1&quot;, &quot;-o&quot;, &quot;outfile&quot;]</span>
+        <span class="doccomment">/// ).unwrap();</span>
+        <span class="doccomment">/// ```</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">S1</span>, <span class="ident">S2</span>, <span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">program</span>: <span class="ident">S1</span>, <span class="ident">args</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+        <span class="kw">where</span>
+            <span class="ident">S1</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
+            <span class="ident">S2</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">OsStr</span><span class="op">&gt;</span>,
+            <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">S2</span><span class="op">&gt;</span>,
+        {
+            <span class="kw">use</span> <span class="ident">std::process</span>::{<span class="ident">Command</span>, <span class="ident">Stdio</span>};
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">program</span>)
+                .<span class="ident">args</span>(<span class="ident">args</span>)
+                .<span class="ident">stdin</span>(<span class="ident">Stdio::piped</span>())
+                .<span class="ident">stdout</span>(<span class="ident">Stdio::null</span>())
+                .<span class="ident">spawn</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident">child</span>.<span class="ident">stdin</span>.<span class="ident">as_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to open stdin&quot;</span>);
+            <span class="macro">write!</span>(<span class="ident">stdin</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>)<span class="question-mark">?</span>;
+            <span class="kw">match</span> <span class="ident">child</span>.<span class="ident">wait</span>()<span class="question-mark">?</span>.<span class="ident">code</span>() {
+                <span class="prelude-val">Some</span>(<span class="number">0</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+                <span class="prelude-val">Some</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(
+                    <span class="ident">ErrorKind::Other</span>,
+                    <span class="macro">format!</span>(<span class="string">&quot;dot program returned error code {}&quot;</span>, <span class="ident">e</span>),
+                )),
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(
+                    <span class="ident">ErrorKind::Other</span>,
+                    <span class="string">&quot;dot program was killed by a signal&quot;</span>,
+                )),
+            }
         }
     }
 }

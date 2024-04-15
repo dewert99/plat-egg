@@ -79,9 +79,11 @@
 <span id="73">73</span>
 <span id="74">74</span>
 <span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::explain</span>::{<span class="ident">Connection</span>, <span class="ident">Explain</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::raw::EGraphResidual</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Id</span>, <span class="ident">Language</span>};
+<span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type</span> <span class="ident">UndoLog</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 

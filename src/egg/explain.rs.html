@@ -2078,7 +2078,10 @@
 <span id="2072">2072</span>
 <span id="2073">2073</span>
 <span id="2074">2074</span>
-</pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">semi_persistent</span>;
+<span id="2075">2075</span>
+<span id="2076">2076</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
+<span class="kw">mod</span> <span class="ident">semi_persistent</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">semi_persistent::PushInfo</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Symbol</span>;
@@ -4027,6 +4030,7 @@ See [`Explanation`] for more details.
 <span class="kw">mod</span> <span class="ident">tests</span> {
 
     <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">simple_explain</span>() {

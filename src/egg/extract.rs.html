@@ -319,7 +319,10 @@
 <span id="313">313</span>
 <span id="314">314</span>
 <span id="315">315</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+<span id="316">316</span>
+<span id="317">317</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::HashMap</span>;
@@ -617,6 +620,7 @@ assert_eq!(AstDepth.cost_rec(&amp;e), 2);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">ast_size_overflow</span>() {

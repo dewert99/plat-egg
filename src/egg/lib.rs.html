@@ -148,9 +148,13 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">forbid</span>(<span class="ident">unsafe_code</span>)]</span>
+<span class="attribute">#![<span class="ident">no_std</span>]</span>
 <span class="doccomment">/*!
 
 `egg` (**e**-**g**raphs **g**ood) is a e-graph library optimized for equality saturation.
@@ -180,6 +184,8 @@ for less or more logging.
 <span class="attribute">#![<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;## Simple Example\n```&quot;</span>]</span>
 <span class="attribute">#![<span class="ident">doc</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/simple.rs&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;\n```&quot;</span>]</span>
+
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">no_std_compat</span> <span class="kw">as</span> <span class="ident">std</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;egg_compat&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">macros</span>;
