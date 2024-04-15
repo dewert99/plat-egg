@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::fmt::{self, Debug, Formatter};
 
 use log::*;

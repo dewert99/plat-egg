@@ -1,6 +1,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
+#![no_std]
 /*!
 
 `egg` (**e**-**g**raphs **g**ood) is a e-graph library optimized for equality saturation.
@@ -30,6 +31,8 @@ for less or more logging.
 #![doc = "## Simple Example\n```"]
 #![doc = include_str!("../tests/simple.rs")]
 #![doc = "\n```"]
+
+extern crate no_std_compat as std;
 
 #[cfg(feature = "egg_compat")]
 mod macros;

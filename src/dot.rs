@@ -6,10 +6,8 @@ Use the [`Dot`] struct to visualize an [`EGraph`](crate::EGraph)
 [GraphViz]: https://graphviz.gitlab.io/
 !*/
 
-use std::ffi::OsStr;
+use no_std_compat::prelude::v1::*;
 use std::fmt::{self, Debug, Display, Formatter};
-use std::io::{Error, ErrorKind, Result, Write};
-use std::path::Path;
 
 use crate::{raw::EGraphResidual, raw::Language};
 
@@ -63,13 +61,6 @@ impl<'a, L> Dot<'a, L>
 where
     L: Language + Display,
 {
-    /// Writes the `Dot` to a .dot file with the given filename.
-    /// Does _not_ require a `dot` binary.
-    pub fn to_dot(&self, filename: impl AsRef<Path>) -> Result<()> {
-        let mut file = std::fs::File::create(filename)?;
-        write!(file, "{}", self)
-    }
-
     /// Adds a line to the dot output.
     /// Indentation and a newline will be added automatically.
     pub fn with_config_line(mut self, line: impl Into<String>) -> Self {
@@ -81,73 +72,6 @@ where
     pub fn with_anchors(mut self, use_anchors: bool) -> Self {
         self.use_anchors = use_anchors;
         self
-    }
-
-    /// Renders the `Dot` to a .png file with the given filename.
-    /// Requires a `dot` binary to be on your `$PATH`.
-    pub fn to_png(&self, filename: impl AsRef<Path>) -> Result<()> {
-        self.run_dot(&["-Tpng".as_ref(), "-o".as_ref(), filename.as_ref()])
-    }
-
-    /// Renders the `Dot` to a .svg file with the given filename.
-    /// Requires a `dot` binary to be on your `$PATH`.
-    pub fn to_svg(&self, filename: impl AsRef<Path>) -> Result<()> {
-        self.run_dot(&["-Tsvg".as_ref(), "-o".as_ref(), filename.as_ref()])
-    }
-
-    /// Renders the `Dot` to a .pdf file with the given filename.
-    /// Requires a `dot` binary to be on your `$PATH`.
-    pub fn to_pdf(&self, filename: impl AsRef<Path>) -> Result<()> {
-        self.run_dot(&["-Tpdf".as_ref(), "-o".as_ref(), filename.as_ref()])
-    }
-
-    /// Invokes `dot` with the given arguments, piping this formatted
-    /// `Dot` into stdin.
-    pub fn run_dot<S, I>(&self, args: I) -> Result<()>
-    where
-        S: AsRef<OsStr>,
-        I: IntoIterator<Item = S>,
-    {
-        self.run("dot", args)
-    }
-
-    /// Invokes some program with the given arguments, piping this
-    /// formatted `Dot` into stdin.
-    ///
-    /// Can be used to run a different binary than `dot`:
-    /// ```no_run
-    /// # use egg::*;
-    /// # let mut egraph: EGraph<SymbolLang, ()> = Default::default();
-    /// egraph.dot().run(
-    ///     "/path/to/my/dot",
-    ///     &["arg1", "-o", "outfile"]
-    /// ).unwrap();
-    /// ```
-    pub fn run<S1, S2, I>(&self, program: S1, args: I) -> Result<()>
-    where
-        S1: AsRef<OsStr>,
-        S2: AsRef<OsStr>,
-        I: IntoIterator<Item = S2>,
-    {
-        use std::process::{Command, Stdio};
-        let mut child = Command::new(program)
-            .args(args)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::null())
-            .spawn()?;
-        let stdin = child.stdin.as_mut().expect("Failed to open stdin");
-        write!(stdin, "{}", self)?;
-        match child.wait()?.code() {
-            Some(0) => Ok(()),
-            Some(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("dot program returned error code {}", e),
-            )),
-            None => Err(Error::new(
-                ErrorKind::Other,
-                "dot program was killed by a signal",
-            )),
-        }
     }
 
     // gives back the appropriate label and anchor
@@ -165,6 +89,90 @@ where
             (3, 1) => (s(":s"), s("")),
             (3, 2) => (s(":se"), s("")),
             (_, _) => (s(""), format!("label={}", i)),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+mod std_only {
+    use super::*;
+    use std::ffi::OsStr;
+    use std::io::{Error, ErrorKind, Result, Write};
+    use std::path::Path;
+
+    impl<'a, L: Language + Display> Dot<'a, L> {
+        /// Writes the `Dot` to a .dot file with the given filename.
+        /// Does _not_ require a `dot` binary.
+        pub fn to_dot(&self, filename: impl AsRef<Path>) -> Result<()> {
+            let mut file = std::fs::File::create(filename)?;
+            write!(file, "{}", self)
+        }
+
+        /// Renders the `Dot` to a .png file with the given filename.
+        /// Requires a `dot` binary to be on your `$PATH`.
+        pub fn to_png(&self, filename: impl AsRef<Path>) -> Result<()> {
+            self.run_dot(&["-Tpng".as_ref(), "-o".as_ref(), filename.as_ref()])
+        }
+
+        /// Renders the `Dot` to a .svg file with the given filename.
+        /// Requires a `dot` binary to be on your `$PATH`.
+        pub fn to_svg(&self, filename: impl AsRef<Path>) -> Result<()> {
+            self.run_dot(&["-Tsvg".as_ref(), "-o".as_ref(), filename.as_ref()])
+        }
+
+        /// Renders the `Dot` to a .pdf file with the given filename.
+        /// Requires a `dot` binary to be on your `$PATH`.
+        pub fn to_pdf(&self, filename: impl AsRef<Path>) -> Result<()> {
+            self.run_dot(&["-Tpdf".as_ref(), "-o".as_ref(), filename.as_ref()])
+        }
+
+        /// Invokes `dot` with the given arguments, piping this formatted
+        /// `Dot` into stdin.
+        pub fn run_dot<S, I>(&self, args: I) -> Result<()>
+        where
+            S: AsRef<OsStr>,
+            I: IntoIterator<Item = S>,
+        {
+            self.run("dot", args)
+        }
+
+        /// Invokes some program with the given arguments, piping this
+        /// formatted `Dot` into stdin.
+        ///
+        /// Can be used to run a different binary than `dot`:
+        /// ```no_run
+        /// # use egg::*;
+        /// # let mut egraph: EGraph<SymbolLang, ()> = Default::default();
+        /// egraph.dot().run(
+        ///     "/path/to/my/dot",
+        ///     &["arg1", "-o", "outfile"]
+        /// ).unwrap();
+        /// ```
+        pub fn run<S1, S2, I>(&self, program: S1, args: I) -> Result<()>
+        where
+            S1: AsRef<OsStr>,
+            S2: AsRef<OsStr>,
+            I: IntoIterator<Item = S2>,
+        {
+            use std::process::{Command, Stdio};
+            let mut child = Command::new(program)
+                .args(args)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .spawn()?;
+            let stdin = child.stdin.as_mut().expect("Failed to open stdin");
+            write!(stdin, "{}", self)?;
+            match child.wait()?.code() {
+                Some(0) => Ok(()),
+                Some(e) => Err(Error::new(
+                    ErrorKind::Other,
+                    format!("dot program returned error code {}", e),
+                )),
+                None => Err(Error::new(
+                    ErrorKind::Other,
+                    "dot program was killed by a signal",
+                )),
+            }
         }
     }
 }

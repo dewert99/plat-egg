@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -296,6 +297,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::*;
+    use no_std_compat::prelude::v1::*;
 
     #[test]
     fn ast_size_overflow() {

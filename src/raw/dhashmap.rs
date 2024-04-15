@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 use std::fmt::{Debug, Formatter};
 use std::hash::{BuildHasher, Hash};
 use std::iter;
@@ -159,6 +160,7 @@ impl<K: Debug, V: Debug, S> Debug for DHashMap<K, V, S> {
 #[cfg(test)]
 mod test {
     use crate::raw::dhashmap::DHashMap;
+    use no_std_compat::prelude::v1::*;
     use std::fmt::Debug;
     use std::hash::{Hash, Hasher};
 

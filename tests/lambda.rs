@@ -1,5 +1,5 @@
 use egg::{rewrite as rw, *};
-use fxhash::FxHashSet as HashSet;
+type HashSet<T> = hashbrown::HashSet<T, std::hash::BuildHasherDefault<rustc_hash::FxHasher>>;
 
 define_language! {
     enum Lambda {

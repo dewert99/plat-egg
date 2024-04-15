@@ -1,4 +1,5 @@
 use crate::*;
+use no_std_compat::prelude::v1::*;
 use std::result;
 
 type Result = result::Result<(), ()>;

@@ -1,3 +1,4 @@
+use no_std_compat::prelude::v1::*;
 #[cfg(feature = "serde-1")]
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
