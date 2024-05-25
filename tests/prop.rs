@@ -1,4 +1,4 @@
-use egg::*;
+use plat_egg::*;
 
 define_language! {
     enum Prop {
@@ -11,8 +11,8 @@ define_language! {
     }
 }
 
-type EGraph = egg::EGraph<Prop, ConstantFold>;
-type Rewrite = egg::Rewrite<Prop, ConstantFold>;
+type EGraph = plat_egg::EGraph<Prop, ConstantFold>;
+type Rewrite = plat_egg::Rewrite<Prop, ConstantFold>;
 
 #[derive(Default)]
 struct ConstantFold;

@@ -36,7 +36,7 @@ use crate::*;
 /// This is probably how you'll create most [`Pattern`]s.
 ///
 /// ```
-/// use egg::*;
+/// use plat_egg::*;
 /// define_language! {
 ///     enum Math {
 ///         Num(i32),

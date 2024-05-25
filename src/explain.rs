@@ -82,7 +82,7 @@ pub struct Explain<L: Language> {
         ))
     )]
     pub uncanon_memo: HashMap<L, Id>,
-    /// By default, egg uses a greedy algorithm to find shorter explanations when they are extracted.
+    /// By default, plat_egg uses a greedy algorithm to find shorter explanations when they are extracted.
     pub optimize_explanation_lengths: bool,
     // For a given pair of enodes in the same eclass,
     // stores the length of the shortest found explanation

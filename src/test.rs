@@ -1,4 +1,4 @@
-/*! Utilities for testing / benchmarking egg.
+/*! Utilities for testing / benchmarking plat_egg.
 
 These are not considered part of the public api.
 */
@@ -275,8 +275,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use egg::*;
-/// egg::test_fn! {
+/// # use plat_egg::*;
+/// plat_egg::test_fn! {
 ///     // name of the generated test function
 ///     my_test_name,
 ///     // the rules to use

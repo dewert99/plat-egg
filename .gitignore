@@ -3,7 +3,7 @@ target
 Cargo.lock
 
 dots/
-egg/data/
+plat_egg/data/
 
 # nix stuff
 .envrc

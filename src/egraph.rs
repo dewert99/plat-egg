@@ -146,7 +146,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
     /// Actually returns the size of the hashcons index.
     /// # Example
     /// ```
-    /// use egg::{*, SymbolLang as S};
+    /// use plat_egg::{*, SymbolLang as S};
     /// let mut egraph = EGraph::<S, ()>::default();
     /// let x = egraph.add(S::leaf("x"));
     /// let y = egraph.add(S::leaf("y"));
@@ -189,7 +189,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
         self
     }
 
-    /// By default, egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
+    /// By default, plat_egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
     /// Use this function to turn this algorithm off.
     pub fn without_explanation_length_optimization(mut self) -> Self {
         if let Some(explain) = &mut self.explain {
@@ -200,7 +200,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
         }
     }
 
-    /// By default, egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
+    /// By default, plat_egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
     /// Use this function to turn this algorithm on again if you have turned it off.
     pub fn with_explanation_length_optimization(mut self) -> Self {
         if let Some(explain) = &mut self.explain {
@@ -552,7 +552,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
     ///
     /// # Example
     /// ```
-    /// use egg::{*, SymbolLang as S};
+    /// use plat_egg::{*, SymbolLang as S};
     /// let mut egraph = EGraph::<S, ()>::default();
     /// let x = egraph.add(S::leaf("x"));
     /// let y = egraph.add(S::leaf("y"));
@@ -668,7 +668,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
     ///
     /// ## Example
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let mut egraph: EGraph<SymbolLang, ()> = EGraph::default().with_explanations_enabled();
     /// let a = egraph.add_uncanonical(SymbolLang::leaf("a"));
     /// let b = egraph.add_uncanonical(SymbolLang::leaf("b"));
@@ -687,7 +687,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
     ///
     /// # Example
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let mut egraph: EGraph<SymbolLang, ()> = EGraph::default().with_explanations_disabled();
     /// let a = egraph.add_uncanonical(SymbolLang::leaf("a"));
     /// let b = egraph.add_uncanonical(SymbolLang::leaf("b"));
@@ -1075,7 +1075,7 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
     ///
     /// # Example
     /// ```
-    /// use egg::{*, SymbolLang as S};
+    /// use plat_egg::{*, SymbolLang as S};
     /// let mut egraph = EGraph::<S, ()>::default();
     /// let x = egraph.add(S::leaf("x"));
     /// let y = egraph.add(S::leaf("y"));
@@ -1179,7 +1179,7 @@ where
     /// it with the previously [`push`](EGraph::push)ed egraph
     ///
     /// ```
-    /// use egg::{EGraph, SymbolLang};
+    /// use plat_egg::{EGraph, SymbolLang};
     /// let mut egraph = EGraph::new(()).with_push_pop_enabled();
     /// let a = egraph.add_uncanonical(SymbolLang::leaf("a"));
     /// let b = egraph.add_uncanonical(SymbolLang::leaf("b"));

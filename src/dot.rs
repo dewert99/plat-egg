@@ -20,7 +20,7 @@ The [`EGraphResidual::dot`] method creates `Dot`s.
 # Example
 
 ```no_run
-use egg::{*, rewrite as rw};
+use plat_egg::{*, rewrite as rw};
 
 let rules = &[
     rw!("mul-commutes"; "(* ?x ?y)" => "(* ?y ?x)"),
@@ -141,7 +141,7 @@ mod std_only {
         ///
         /// Can be used to run a different binary than `dot`:
         /// ```no_run
-        /// # use egg::*;
+        /// # use plat_egg::*;
         /// # let mut egraph: EGraph<SymbolLang, ()> = Default::default();
         /// egraph.dot().run(
         ///     "/path/to/my/dot",

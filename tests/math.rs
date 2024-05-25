@@ -1,8 +1,8 @@
-use egg::{rewrite as rw, *};
 use ordered_float::NotNan;
+use plat_egg::{rewrite as rw, *};
 
-pub type EGraph = egg::EGraph<Math, ConstantFold>;
-pub type Rewrite = egg::Rewrite<Math, ConstantFold>;
+pub type EGraph = plat_egg::EGraph<Math, ConstantFold>;
+pub type Rewrite = plat_egg::Rewrite<Math, ConstantFold>;
 
 pub type Constant = NotNan<f64>;
 
@@ -27,10 +27,10 @@ define_language! {
     }
 }
 
-// You could use egg::AstSize, but this is useful for debugging, since
+// You could use AstSize, but this is useful for debugging, since
 // it will really try to get rid of the Diff operator
 pub struct MathCostFn;
-impl egg::CostFunction<Math> for MathCostFn {
+impl CostFunction<Math> for MathCostFn {
     type Cost = usize;
     fn cost<C>(&mut self, enode: &Math, mut costs: C) -> Self::Cost
     where
@@ -218,7 +218,7 @@ pub fn rules() -> Vec<Rewrite> { vec![
         "(- (* ?a (i ?b ?x)) (i (* (d ?x ?a) (i ?b ?x)) ?x))"),
 ]}
 
-egg::test_fn! {
+test_fn! {
     math_associate_adds, [
         rw!("comm-add"; "(+ ?a ?b)" => "(+ ?b ?a)"),
         rw!("assoc-add"; "(+ ?a (+ ?b ?c))" => "(+ (+ ?a ?b) ?c)"),
@@ -232,21 +232,21 @@ egg::test_fn! {
     @check |r: Runner<Math, ()>| assert_eq!(r.egraph.number_of_classes(), 127)
 }
 
-egg::test_fn! {
+test_fn! {
     #[should_panic(expected = "Could not prove goal 0")]
     math_fail, rules(),
     "(+ x y)" => "(/ x y)"
 }
 
-egg::test_fn! {math_simplify_add, rules(), "(+ x (+ x (+ x x)))" => "(* 4 x)" }
-egg::test_fn! {math_powers, rules(), "(* (pow 2 x) (pow 2 y))" => "(pow 2 (+ x y))"}
+test_fn! {math_simplify_add, rules(), "(+ x (+ x (+ x x)))" => "(* 4 x)" }
+test_fn! {math_powers, rules(), "(* (pow 2 x) (pow 2 y))" => "(pow 2 (+ x y))"}
 
-egg::test_fn! {
+test_fn! {
     math_simplify_const, rules(),
     "(+ 1 (- a (* (- 2 1) a)))" => "1"
 }
 
-egg::test_fn! {
+test_fn! {
     math_simplify_root, rules(),
     runner = Runner::default().with_node_limit(75_000),
     r#"
@@ -259,25 +259,25 @@ egg::test_fn! {
     "(/ 1 (sqrt five))"
 }
 
-egg::test_fn! {
+test_fn! {
     math_simplify_factor, rules(),
     "(* (+ x 3) (+ x 1))"
     =>
     "(+ (+ (* x x) (* 4 x)) 3)"
 }
 
-egg::test_fn! {math_diff_same,      rules(), "(d x x)" => "1"}
-egg::test_fn! {math_diff_different, rules(), "(d x y)" => "0"}
-egg::test_fn! {math_diff_simple1,   rules(), "(d x (+ 1 (* 2 x)))" => "2"}
-egg::test_fn! {math_diff_simple2,   rules(), "(d x (+ 1 (* y x)))" => "y"}
-egg::test_fn! {math_diff_ln,        rules(), "(d x (ln x))" => "(/ 1 x)"}
+test_fn! {math_diff_same,      rules(), "(d x x)" => "1"}
+test_fn! {math_diff_different, rules(), "(d x y)" => "0"}
+test_fn! {math_diff_simple1,   rules(), "(d x (+ 1 (* 2 x)))" => "2"}
+test_fn! {math_diff_simple2,   rules(), "(d x (+ 1 (* y x)))" => "y"}
+test_fn! {math_diff_ln,        rules(), "(d x (ln x))" => "(/ 1 x)"}
 
-egg::test_fn! {
+test_fn! {
     diff_power_simple, rules(),
     "(d x (pow x 3))" => "(* 3 (pow x 2))"
 }
 
-egg::test_fn! {
+test_fn! {
     diff_power_harder, rules(),
     runner = Runner::default()
         .with_time_limit(std::time::Duration::from_secs(10))
@@ -290,28 +290,28 @@ egg::test_fn! {
     "(* x (- (* 3 x) 14))"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_one, rules(), "(i 1 x)" => "x"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_sin, rules(), "(i (cos x) x)" => "(sin x)"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_x, rules(), "(i (pow x 1) x)" => "(/ (pow x 2) 2)"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_part1, rules(), "(i (* x (cos x)) x)" => "(+ (* x (sin x)) (cos x))"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_part2, rules(),
     "(i (* (cos x) x) x)" => "(+ (* x (sin x)) (cos x))"
 }
 
-egg::test_fn! {
+test_fn! {
     integ_part3, rules(), "(i (ln x) x)" => "(- (* x (ln x)) x)"
 }
 
@@ -412,7 +412,7 @@ fn math_ematching_bench() {
         "(- (* ?a (i ?b ?x)) (i (* (d ?x ?a) (i ?b ?x)) ?x))",
     ];
 
-    egg::test::bench_egraph("math", rules(), exprs, extra_patterns);
+    test::bench_egraph("math", rules(), exprs, extra_patterns);
 }
 
 #[test]
@@ -517,7 +517,7 @@ fn test_intersect_basic() {
 
 #[test]
 fn test_medium_intersect() {
-    let mut egraph1 = egg::EGraph::<Math, ()>::new(());
+    let mut egraph1 = plat_egg::EGraph::<Math, ()>::new(());
 
     egraph1.add_expr(&"(sqrt (ln 1))".parse().unwrap());
     let ln = egraph1.add_expr(&"(ln 1)".parse().unwrap());
@@ -538,7 +538,7 @@ fn test_medium_intersect() {
         egraph1.add_expr(&"(+ (* k pi) (* k pi))".parse().unwrap())
     );
 
-    let mut egraph2 = egg::EGraph::<Math, ()>::new(());
+    let mut egraph2 = plat_egg::EGraph::<Math, ()>::new(());
     let ln = egraph2.add_expr(&"(ln 2)".parse().unwrap());
     let k = egraph2.add_expr(&"k".parse().unwrap());
     let mk1 = egraph2.add_expr(&"(* k 1)".parse().unwrap());

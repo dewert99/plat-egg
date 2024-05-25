@@ -36,7 +36,7 @@ impl<L: Language, N: Analysis<L>> LpCostFunction<L, N> for AstSize {
 ///
 /// # Example
 /// ```
-/// use egg::*;
+/// use plat_egg::*;
 /// let mut egraph = EGraph::<SymbolLang, ()>::default();
 ///
 /// let f = egraph.add_expr(&"(f x x x)".parse().unwrap());
