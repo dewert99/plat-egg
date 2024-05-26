@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["egg"];
+window.ALL_CRATES = ["plat_egg"];
