@@ -88,7 +88,7 @@ impl<L: Language> EGraphResidual<L> {
     ///
     /// # Example
     /// ```
-    /// use egg::{raw::*, SymbolLang as S};
+    /// use plat_egg::{raw::*, SymbolLang as S};
     /// let mut egraph = RawEGraph::<S, ()>::default();
     /// let x = egraph.add_uncanonical(S::leaf("x"));
     /// let y = egraph.add_uncanonical(S::leaf("y"));
@@ -110,7 +110,7 @@ impl<L: Language> EGraphResidual<L> {
     /// Returns `true` if the egraph is empty
     /// # Example
     /// ```
-    /// use egg::{raw::*, SymbolLang as S};
+    /// use plat_egg::{raw::*, SymbolLang as S};
     /// let mut egraph = RawEGraph::<S, ()>::default();
     /// assert!(egraph.is_empty());
     /// egraph.add_uncanonical(S::leaf("foo"));
@@ -124,7 +124,7 @@ impl<L: Language> EGraphResidual<L> {
     ///
     /// # Example
     /// ```
-    /// use egg::{raw::*, SymbolLang as S};
+    /// use plat_egg::{raw::*, SymbolLang as S};
     /// let mut egraph = RawEGraph::<S, ()>::default();
     /// let x = egraph.add_uncanonical(S::leaf("x"));
     /// let y = egraph.add_uncanonical(S::leaf("y"));
@@ -164,7 +164,7 @@ impl<L: Language> EGraphResidual<L> {
     /// Actually returns the size of the hashcons index.
     /// # Example
     /// ```
-    /// use egg::{raw::*, SymbolLang as S};
+    /// use plat_egg::{raw::*, SymbolLang as S};
     /// let mut egraph = RawEGraph::<S, ()>::default();
     /// let x = egraph.add_uncanonical(S::leaf("x"));
     /// let y = egraph.add_uncanonical(S::leaf("y"));
@@ -186,7 +186,7 @@ impl<L: Language> EGraphResidual<L> {
     ///
     /// # Example
     /// ```
-    /// # use egg::{SymbolLang, raw::*};
+    /// # use plat_egg::{SymbolLang, raw::*};
     /// let mut egraph: RawEGraph<SymbolLang, ()> = Default::default();
     /// let a = egraph.add_uncanonical(SymbolLang::leaf("a"));
     /// let b = egraph.add_uncanonical(SymbolLang::leaf("b"));
@@ -217,7 +217,7 @@ impl<L: Language> EGraphResidual<L> {
     ///
     /// # Example
     /// ```
-    /// # use egg::{SymbolLang, raw::*};
+    /// # use plat_egg::{SymbolLang, raw::*};
     /// let mut egraph: RawEGraph<SymbolLang, ()> = Default::default();
     /// let a = egraph.add_uncanonical(SymbolLang::leaf("a"));
     /// let b = egraph.add_uncanonical(SymbolLang::leaf("b"));

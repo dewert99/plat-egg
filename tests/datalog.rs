@@ -1,4 +1,4 @@
-use egg::*;
+use plat_egg::*;
 
 define_language! {
     enum Lang {

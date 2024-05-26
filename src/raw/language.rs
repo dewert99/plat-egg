@@ -192,7 +192,7 @@ pub trait Language: Debug + Clone + Eq + Ord + Hash {
     ///
     /// # Example
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let a_plus_2: RecExpr<SymbolLang> = "(+ a 2)".parse().unwrap();
     /// // here's an enode with some meaningless child ids
     /// let enode = SymbolLang::new("*", vec![Id::from(0), Id::from(0)]);
@@ -234,7 +234,7 @@ pub trait Language: Debug + Clone + Eq + Ord + Hash {
     /// You could use this method to perform an "ad-hoc" extraction from the e-graph,
     /// where you already know which node you want pick for each class:
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let mut egraph = EGraph::<SymbolLang, ()>::default();
     /// let expr = "(foo (bar1 (bar2 (bar3 baz))))".parse().unwrap();
     /// let root = egraph.add_expr(&expr);

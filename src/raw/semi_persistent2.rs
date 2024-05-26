@@ -106,8 +106,8 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
     ///
     /// # Example
     /// ```
-    /// use egg::{raw::*, SymbolLang as S};
-    /// use egg::raw::semi_persistent2::UndoLog;
+    /// use plat_egg::{raw::*, SymbolLang as S};
+    /// use plat_egg::raw::semi_persistent2::UndoLog;
     /// let mut egraph = RawEGraph::<S, (), UndoLog>::default();
     /// let a = egraph.add_uncanonical(S::leaf("a"));
     /// let fa = egraph.add_uncanonical(S::new("f", vec![a]));

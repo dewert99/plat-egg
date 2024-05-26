@@ -15,7 +15,7 @@ For example, if you are trying to debug incorrect rules,
 Consider this program, which prints a [`FlatExplanation`] showing how
   `(/ (* (/ 2 3) (/ 3 2)) 1)` can be simplified to `1`:
 ```
-use egg::{*, rewrite as rw};
+use plat_egg::{*, rewrite as rw};
 let rules: &[Rewrite<SymbolLang, ()>] = &[
     rw!("div-one"; "?x" => "(/ ?x 1)"),
     rw!("unsafe-invert-division"; "(/ ?a ?b)" => "(/ 1 (/ ?b ?a))"),

@@ -22,7 +22,7 @@ use thiserror::Error;
 /// [`from_op`]:
 ///
 /// ```
-/// # use egg::*;
+/// # use plat_egg::*;
 /// # use std::fmt::Display;
 /// fn from_op_display_compatible<T: FromOp + Display>(node: T) {
 ///     let op = node.to_string();
@@ -37,7 +37,7 @@ use thiserror::Error;
 /// # Examples
 /// `define_language!` implements [`FromOp`] and [`Display`] automatically:
 /// ```
-/// # use egg::*;
+/// # use plat_egg::*;
 ///
 /// define_language! {
 ///     enum Calc {
@@ -233,7 +233,7 @@ impl<L: Language + Display> RecExpr<L> {
     ///
     /// # Example
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let e: RecExpr<SymbolLang> = "(* (+ 2 2) (+ x y))".parse().unwrap();
     /// assert_eq!(e.pretty(10), "
     /// (*
@@ -355,7 +355,7 @@ just use that.
 # Example
 
 ```
-use egg::{*, rewrite as rw};
+use plat_egg::{*, rewrite as rw};
 
 define_language! {
     enum SimpleMath {
@@ -374,7 +374,7 @@ impl Analysis<SimpleMath> for ConstantFolding {
     type Data = Option<i32>;
 
     fn merge(&mut self, to: &mut Self::Data, from: Self::Data) -> DidMerge {
-        egg::merge_max(to, from)
+        plat_egg::merge_max(to, from)
     }
 
     fn make(egraph: &mut EGraph<SimpleMath, Self>, enode: &SimpleMath) -> Self::Data {

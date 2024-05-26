@@ -1,4 +1,4 @@
-use egg::{rewrite as rw, *};
+use plat_egg::{rewrite as rw, *};
 type HashSet<T> = hashbrown::HashSet<T, std::hash::BuildHasherDefault<rustc_hash::FxHasher>>;
 
 define_language! {
@@ -18,7 +18,7 @@ define_language! {
 
         "if" = If([Id; 3]),
 
-        Symbol(egg::Symbol),
+        Symbol(Symbol),
     }
 }
 
@@ -31,7 +31,7 @@ impl Lambda {
     }
 }
 
-type EGraph = egg::EGraph<Lambda, LambdaAnalysis>;
+type EGraph = plat_egg::EGraph<Lambda, LambdaAnalysis>;
 
 #[derive(Default, Clone)]
 struct LambdaAnalysis;
@@ -196,7 +196,7 @@ impl Applier<Lambda, LambdaAnalysis> for CaptureAvoid {
     }
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_under, rules(),
     "(lam x (+ 4
                (app (lam y (var y))
@@ -207,7 +207,7 @@ egg::test_fn! {
     "(lam x 8))",
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_if_elim, rules(),
     "(if (= (var a) (var b))
          (+ (var a) (var a))
@@ -216,7 +216,7 @@ egg::test_fn! {
     "(+ (var a) (var b))"
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_let_simple, rules(),
     "(let x 0
      (let y 1
@@ -228,19 +228,19 @@ egg::test_fn! {
     "1",
 }
 
-egg::test_fn! {
+test_fn! {
     #[should_panic(expected = "Could not prove goal 0")]
     lambda_capture, rules(),
     "(let x 1 (lam x (var x)))" => "(lam x 1)"
 }
 
-egg::test_fn! {
+test_fn! {
     #[should_panic(expected = "Could not prove goal 0")]
     lambda_capture_free, rules(),
     "(let y (+ (var x) (var x)) (lam x (var y)))" => "(lam x (+ (var x) (var x)))"
 }
 
-egg::test_fn! {
+test_fn! {
     #[should_panic(expected = "Could not prove goal 0")]
     lambda_closure_not_seven, rules(),
     "(let five 5
@@ -251,7 +251,7 @@ egg::test_fn! {
     "7"
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_compose, rules(),
     "(let compose (lam f (lam g (lam x (app (var f)
                                        (app (var g) (var x))))))
@@ -264,12 +264,12 @@ egg::test_fn! {
     "(lam ?x (+ (var ?x) 2))"
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_if_simple, rules(),
     "(if (= 1 1) 7 9)" => "7"
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_compose_many, rules(),
     "(let compose (lam f (lam g (lam x (app (var f)
                                        (app (var g) (var x))))))
@@ -285,7 +285,7 @@ egg::test_fn! {
     "(lam ?x (+ (var ?x) 7))"
 }
 
-egg::test_fn! {
+test_fn! {
     #[cfg(not(debug_assertions))]
     #[cfg_attr(feature = "test-explanations", ignore)]
     lambda_function_repeat, rules(),
@@ -310,7 +310,7 @@ egg::test_fn! {
     "(lam ?x (+ (var ?x) 2))"
 }
 
-egg::test_fn! {
+test_fn! {
     lambda_if, rules(),
     "(let zeroone (lam x
         (if (= (var x) 0)
@@ -324,7 +324,7 @@ egg::test_fn! {
     "1",
 }
 
-egg::test_fn! {
+test_fn! {
     #[cfg(not(debug_assertions))]
     #[cfg_attr(feature = "test-explanations", ignore)]
     lambda_fib, rules(),
@@ -399,5 +399,5 @@ fn lambda_ematching_bench() {
         "(lam ?fresh (let ?v1 ?e (let ?v2 (var ?fresh) ?body)))",
     ];
 
-    egg::test::bench_egraph("lambda", rules(), exprs, extra_patterns);
+    test::bench_egraph("lambda", rules(), exprs, extra_patterns);
 }

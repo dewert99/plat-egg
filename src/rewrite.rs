@@ -233,7 +233,7 @@ where
 ///
 /// # Example
 /// ```
-/// use egg::{rewrite as rw, *};
+/// use plat_egg::{rewrite as rw, *};
 /// use std::sync::Arc;
 ///
 /// define_language! {
@@ -245,7 +245,7 @@ where
 ///     }
 /// }
 ///
-/// type EGraph = egg::EGraph<Math, MinSize>;
+/// type EGraph = plat_egg::EGraph<Math, MinSize>;
 ///
 /// // Our metadata in this case will be size of the smallest
 /// // represented expression in the eclass.

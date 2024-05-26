@@ -76,7 +76,7 @@ You can add your own data to this by implementing the
 # Example
 
 ```
-use egg::{*, rewrite as rw};
+use plat_egg::{*, rewrite as rw};
 
 define_language! {
     enum SimpleLanguage {
@@ -354,7 +354,7 @@ where
     ///
     /// # Example
     /// ```
-    /// # use egg::*;
+    /// # use plat_egg::*;
     /// let rules: &[Rewrite<SymbolLang, ()>] = &[
     ///     rewrite!("commute-add"; "(+ ?a ?b)" => "(+ ?b ?a)"),
     ///     // probably some others ...
@@ -438,14 +438,14 @@ where
         self
     }
 
-    /// By default, egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
+    /// By default, plat_egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
     /// Use this function to turn this algorithm off.
     pub fn without_explanation_length_optimization(mut self) -> Self {
         self.egraph = self.egraph.without_explanation_length_optimization();
         self
     }
 
-    /// By default, egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
+    /// By default, plat_egg runs a greedy algorithm to reduce the size of resulting explanations (without complexity overhead).
     /// Use this function to turn this algorithm on again if you have turned it off.
     pub fn with_explanation_length_optimization(mut self) -> Self {
         self.egraph = self.egraph.with_explanation_length_optimization();
