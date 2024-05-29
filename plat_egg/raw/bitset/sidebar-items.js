@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["BitSet",""],["DefaultVec","A mapping from indexes to values where all indexes initially map to [`Default::default`]"]]};
