@@ -46,6 +46,7 @@ impl<T: Default> DefaultVec<T> {
 
 type Elt = u32;
 
+/// Set of indexes
 #[derive(Default, Clone)]
 #[cfg_attr(feature = "serde-1", derive(Serialize, Deserialize))]
 pub struct BitSet(DefaultVec<Elt>);
@@ -56,18 +57,36 @@ fn split(x: usize) -> (usize, Elt) {
     (x / Elt::BITS as usize, 1 << offset)
 }
 
-/// Set of indexes
 impl BitSet {
     /// Adds an element to the set
+    /// If the set did not have this value present, true is returned.
+    /// If the set did have this value present, false is returned.
+    ///
+    /// ```rust
+    /// use plat_egg::raw::bitset::BitSet;
+    /// let mut s = BitSet::default();
+    /// assert!(s.insert(0));
+    /// assert!(!s.insert(0));
+    /// ```
     pub fn insert(&mut self, x: usize) -> bool {
         let (chunk_idx, mask) = split(x);
         let chunk = self.0.get_mut(chunk_idx);
-        let res = (*chunk & mask) != 0;
+        let res = (*chunk & mask) == 0;
         *chunk |= mask;
         res
     }
 
     /// Removes an element form the set
+    /// Returns whether the value was present in the set.
+    ///
+    /// ```rust
+    /// use plat_egg::raw::bitset::BitSet;
+    /// let mut s = BitSet::default();
+    /// assert!(!s.remove(0));
+    /// s.insert(0);
+    /// assert!(s.remove(0));
+    /// assert!(!s.remove(0))
+    /// ```
     pub fn remove(&mut self, x: usize) -> bool {
         let (chunk_idx, mask) = split(x);
         let chunk = self.0.get_mut(chunk_idx);
