@@ -850,12 +850,10 @@ impl<L: Language, N: Analysis<L>> EGraph<L, N> {
 
             let did_merge = self.analysis.merge(&mut info.data1.data, info.data2.data);
             if did_merge.0 {
-                self.analysis_pending
-                    .extend(info.parents1.into_iter().copied());
+                self.analysis_pending.extend(info.parents1.iter().copied());
             }
             if did_merge.1 {
-                self.analysis_pending
-                    .extend(info.parents2.into_iter().copied());
+                self.analysis_pending.extend(info.parents2.iter().copied());
             }
 
             concat_vecs(&mut info.data1.nodes, info.data2.nodes);

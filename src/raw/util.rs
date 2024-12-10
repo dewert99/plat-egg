@@ -13,5 +13,4 @@ mod hashmap {
     use super::BuildHasher;
     pub(crate) type HashMap<K, V> = hashbrown::HashMap<K, V, BuildHasher>;
     pub(crate) type HashSet<K> = hashbrown::HashSet<K, BuildHasher>;
-    pub(crate) type Entry<'a, K, V> = hashbrown::hash_map::Entry<'a, K, V, BuildHasher>;
 }

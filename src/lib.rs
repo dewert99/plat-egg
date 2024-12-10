@@ -126,6 +126,8 @@ impl std::fmt::Display for Id {
 mod cid {
     /// Index into the classes field of an [`EGraph`]
     #[derive(Hash, Clone, Copy, Eq, PartialEq)]
+    #[cfg_attr(feature = "serde-1", derive(serde::Serialize, serde::Deserialize))]
+    #[cfg_attr(feature = "serde-1", serde(transparent))]
     pub struct ClassId(pub(crate) u32);
 
     impl std::fmt::Debug for ClassId {

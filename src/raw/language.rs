@@ -83,19 +83,19 @@ impl<L: Language> IndexMut<Id> for RecExpr<L> {
     }
 }
 
-/// Trait that defines a Language whose terms will be in the [`EGraph`].
+/// Trait that defines a Language whose terms will be in the [`EGraph`](crate::raw::RawEGraph).
 ///
-/// Check out the [`define_language!`] macro for an easy way to create
+/// Check out the [`define_language!`](crate::define_language) macro for an easy way to create
 /// a [`Language`].
 ///
-/// If you want to pretty-print expressions, you should implement [`Display`] to
+/// If you want to pretty-print expressions, you should implement [`Display`](core::fmt::Display) to
 /// display the language node's operator. For example, a language node
 /// `Add([Id; 2])` might be displayed as "+".
 ///
-/// To parse expressions from strings you should also implement [`FromOp`].
+/// To parse expressions from strings you should also implement [`FromOp`](crate::FromOp).
 ///
-/// The [`define_language!`] macro automatically implements both [`Display`] and
-/// [`FromOp`].
+/// The [`define_language!`](crate::define_language)  macro automatically implements both
+/// [`Display`](core::fmt::Display) and [`FromOp`](crate::FromOp).
 ///
 /// See [`SymbolLang`] for quick-and-dirty use cases.
 #[allow(clippy::len_without_is_empty)]

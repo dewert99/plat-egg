@@ -582,7 +582,7 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
     }
 
     /// Similar to [`raw_add`](RawEGraph::raw_add) but takes an extra `pre_union`
-    /// closure that allows comparing the two [equal](Eq::eq) canonical nodes used to determine
+    /// closure that allows comparing the two [equal](PartialEq::eq) canonical nodes used to determine
     /// a congruent union. This can be useful in niche situations involving explanations when
     /// node canonization sorts children to make some discriminants symmetric
     ///
@@ -750,12 +750,15 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
         let _: Result<(), Infallible> = RawEGraph::try_raw_rebuild(
             outer,
             get_self,
-            |this, id1, id2| Ok(perform_union(this, id1, id2)),
+            |this, id1, id2| {
+                perform_union(this, id1, id2);
+                Ok(())
+            },
             handle_pending,
         );
     }
 
-    /// Similar to [`raw_rebuild`] but allows for the union operation to fail and abort the rebuild
+    /// Similar to [`raw_rebuild`](RawEGraph::raw_rebuild) but allows for the union operation to fail and abort the rebuild
     #[inline]
     pub fn try_raw_rebuild<T, E>(
         outer: &mut T,
@@ -773,7 +776,7 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
     }
 
     /// Similar to [`try_raw_rebuild`](RawEGraph::try_raw_rebuild) but takes an extra `pre_union`
-    /// closure that allows comparing the two [equal](Eq::eq) canonical nodes used to determine
+    /// closure that allows comparing the two [equal](PartialEq::eq) canonical nodes used to determine
     /// a congruent union. This can be useful in niche situations involving explanations when
     /// node canonization sorts children to make some discriminants symmetric
     #[inline]
