@@ -1,7 +1,5 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs)]
-#![forbid(unsafe_code)]
-#![no_std]
 /*!
 
 `egg` (**e**-**g**raphs **g**ood) is a e-graph library optimized for equality saturation.
@@ -32,6 +30,7 @@ for less or more logging.
 #![doc = include_str!("../tests/simple.rs")]
 #![doc = "\n```"]
 
+extern crate core;
 extern crate no_std_compat as std;
 
 #[cfg(feature = "egg_compat")]
@@ -70,6 +69,8 @@ mod multipattern;
 #[cfg(feature = "egg_compat")]
 mod pattern;
 
+const U31_MAX: u32 = (1 << (u32::BITS - 1)) - 1;
+
 /// Lower level egraph API
 pub mod raw;
 
@@ -92,8 +93,14 @@ mod util;
 #[cfg_attr(feature = "serde-1", serde(transparent))]
 pub struct Id(u32);
 
+impl Id {
+    /// Dummy id value
+    pub const MAX: Id = Id(U31_MAX);
+}
+
 impl From<usize> for Id {
     fn from(n: usize) -> Id {
+        assert!(n <= U31_MAX as usize);
         Id(n as u32)
     }
 }
@@ -115,6 +122,33 @@ impl std::fmt::Display for Id {
         write!(f, "{}", self.0)
     }
 }
+
+mod cid {
+    /// Index into the classes field of an [`EGraph`]
+    #[derive(Hash, Clone, Copy, Eq, PartialEq)]
+    pub struct ClassId(pub(crate) u32);
+
+    impl std::fmt::Debug for ClassId {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl From<usize> for ClassId {
+        fn from(n: usize) -> ClassId {
+            assert!(n <= crate::U31_MAX as usize);
+            ClassId(n as u32)
+        }
+    }
+
+    impl ClassId {
+        pub(crate) fn idx(self) -> usize {
+            self.0 as usize
+        }
+    }
+}
+
+use cid::ClassId;
 
 #[cfg(feature = "egg_compat")]
 pub(crate) use {explain::Explain, raw::UnionFind};

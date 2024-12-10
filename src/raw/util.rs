@@ -7,8 +7,6 @@ mod hashmap {
     use super::BuildHasher;
     pub(crate) type HashMap<K, V> = indexmap::IndexMap<K, V, BuildHasher>;
     pub(crate) type HashSet<K> = indexmap::IndexSet<K, BuildHasher>;
-
-    pub(crate) type Entry<'a, K, V> = indexmap::map::Entry<'a, K, V>;
 }
 #[cfg(not(feature = "deterministic"))]
 mod hashmap {

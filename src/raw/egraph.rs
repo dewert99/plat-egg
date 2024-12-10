@@ -1,5 +1,5 @@
 use crate::raw::{util::HashMap, Language, RawEClass, RecExpr, UnionFind};
-use crate::{dot::Dot, Id};
+use crate::{dot::Dot, ClassId, Id};
 use no_std_compat::prelude::v1::*;
 use std::collections::BTreeMap;
 use std::convert::Infallible;
@@ -364,7 +364,7 @@ pub struct RawEGraph<L: Language, D, U = ()> {
     pub(super) pending: Vec<Id>,
     /// `Id`s that are congruently equivalent to another `Id` that is not in this set
     pub(super) congruence_duplicates: BitSet,
-    pub(super) classes: HashMap<Id, RawEClass<D>>,
+    pub(super) classes: Vec<RawEClass<D>>,
     pub(super) undo_log: U,
 }
 
@@ -407,11 +407,11 @@ impl<L: Language, D: Debug, U> Debug for RawEGraph<L, D, U> {
         let classes: BTreeMap<_, _> = self
             .classes
             .iter()
-            .map(|(x, y)| {
+            .map(|y| {
                 let mut parents = y.parents.clone();
                 parents.sort_unstable();
                 (
-                    *x,
+                    y.id,
                     RawEClass {
                         id: y.id,
                         raw_data: &y.raw_data,
@@ -431,10 +431,7 @@ impl<L: Language, D: Debug, U> Debug for RawEGraph<L, D, U> {
 impl<L: Language, D, U> RawEGraph<L, D, U> {
     /// Returns an iterator over the eclasses in the egraph.
     pub fn classes(&self) -> impl ExactSizeIterator<Item = &RawEClass<D>> {
-        self.classes.iter().map(|(id, class)| {
-            debug_assert_eq!(*id, class.id);
-            class
-        })
+        self.classes.iter()
     }
 
     /// Returns a mutating iterator over the eclasses in the egraph.
@@ -445,10 +442,7 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
         impl ExactSizeIterator<Item = &mut RawEClass<D>>,
         &mut EGraphResidual<L>,
     ) {
-        let iter = self.classes.iter_mut().map(|(id, class)| {
-            debug_assert_eq!(*id, class.id);
-            class
-        });
+        let iter = self.classes.iter_mut();
         (iter, &mut self.residual)
     }
 
@@ -460,15 +454,15 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
     /// Returns the eclass corresponding to `id`
     pub fn get_class<I: BorrowMut<Id>>(&self, mut id: I) -> &RawEClass<D> {
         let id = id.borrow_mut();
-        *id = self.find(*id);
-        self.get_class_with_cannon(*id)
+        let (nid, cid) = self.unionfind.find_full(*id);
+        *id = nid;
+        &self.classes[cid.idx()]
     }
 
     /// Like [`get_class`](RawEGraph::get_class) but panics if `id` is not canonical
     pub fn get_class_with_cannon(&self, id: Id) -> &RawEClass<D> {
-        self.classes
-            .get(&id)
-            .unwrap_or_else(|| panic!("Invalid id {}", id))
+        let cid = self.unionfind.find_canon(id);
+        &self.classes[cid.idx()]
     }
 
     /// Returns the eclass corresponding to `id`
@@ -478,8 +472,9 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
         mut id: I,
     ) -> (&mut RawEClass<D>, &mut EGraphResidual<L>) {
         let id = id.borrow_mut();
-        *id = self.find_mut(*id);
-        self.get_class_mut_with_cannon(*id)
+        let (nid, cid) = self.unionfind.find_mut_full(*id);
+        *id = nid;
+        (&mut self.classes[cid.idx()], &mut self.residual)
     }
 
     /// Like [`get_class_mut`](RawEGraph::get_class_mut) but panics if `id` is not canonical
@@ -487,12 +482,8 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
         &mut self,
         id: Id,
     ) -> (&mut RawEClass<D>, &mut EGraphResidual<L>) {
-        (
-            self.classes
-                .get_mut(&id)
-                .unwrap_or_else(|| panic!("Invalid id {}", id)),
-            &mut self.residual,
-        )
+        let cid = self.unionfind.find_canon(id);
+        (&mut self.classes[cid.idx()], &mut self.residual)
     }
 
     /// Returns whether `self` is congruently closed
@@ -618,9 +609,10 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
             } else {
                 let this = get_self(outer);
                 let canon_id = this.find_mut(existing_id);
-                let new_id = this.residual.unionfind.make_set();
-                this.undo_log.add_node(&original, &[], new_id);
-                this.undo_log.union(canon_id, new_id, Vec::new());
+                let cid = ClassId::from(this.classes.len());
+                let new_id = this.residual.unionfind.make_set_with_id(cid);
+                this.undo_log.add_node(&original, &[], new_id, cid);
+                this.undo_log.union(canon_id, new_id, Vec::new(), cid);
                 debug_assert_eq!(Id::from(this.nodes.len()), new_id);
                 this.residual.nodes.push(original);
                 this.residual.unionfind.union(canon_id, new_id);
@@ -628,12 +620,15 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
                 new_id
             }
         } else {
-            let id = this.residual.unionfind.make_set();
+            let classes_len = this.classes.len();
+            let end_cid = ClassId::from(classes_len);
+            let id = this.residual.unionfind.make_set_with_id(end_cid);
             let mut dedup_children = SmallVec::<[Id; 8]>::from_slice(enode.children());
             dedup_children.sort();
             dedup_children.dedup();
 
-            this.undo_log.add_node(&original, &dedup_children, id);
+            this.undo_log
+                .add_node(&original, &dedup_children, id, end_cid);
             debug_assert_eq!(Id::from(this.nodes.len()), id);
             this.residual.nodes.push(original);
 
@@ -650,7 +645,12 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
                 this.get_class_mut_with_cannon(child).0.parents.push(id);
             }
 
-            this.classes.insert(id, class);
+            assert_eq!(
+                this.classes.len(),
+                classes_len,
+                "classes can't be added from callback"
+            );
+            this.classes.push(class);
             this.residual.memo.insert_with_hash(hash, enode, id);
             this.undo_log.insert_memo(hash);
 
@@ -670,26 +670,39 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
         enode_id2: Id,
         merge: impl FnOnce(MergeInfo<'_, D>),
     ) {
-        let mut id1 = self.find_mut(enode_id1);
-        let mut id2 = self.find_mut(enode_id2);
+        let (mut id1, mut cid1) = self.unionfind.find_mut_full(enode_id1);
+        let (mut id2, mut cid2) = self.unionfind.find_mut_full(enode_id2);
         if id1 == id2 {
             return;
         }
         // make sure class2 has fewer parents
-        let class1_parents = self.classes[&id1].parents.len();
-        let class2_parents = self.classes[&id2].parents.len();
+        let class1_parents = self.classes[cid1.idx()].parents.len();
+        let class2_parents = self.classes[cid2.idx()].parents.len();
         let mut swapped = false;
         if class1_parents < class2_parents {
             swapped = true;
             std::mem::swap(&mut id1, &mut id2);
+            std::mem::swap(&mut cid1, &mut cid2);
         }
 
         // make id1 the new root
         self.residual.unionfind.union(id1, id2);
 
         assert_ne!(id1, id2);
-        let class2 = self.classes.remove(&id2).unwrap();
-        let class1 = self.classes.get_mut(&id1).unwrap();
+        let class2 = if cid2.idx() == self.classes.len() - 1 {
+            self.classes.pop().unwrap()
+        } else {
+            let class2 = self.classes.swap_remove(cid2.idx());
+            let fixup_id = self.classes[cid2.idx()].id;
+            self.unionfind.reset_root(fixup_id, cid2);
+            self.undo_log.fix_id(fixup_id, cid2);
+            if cid1.idx() == self.classes.len() {
+                cid1 = cid2;
+            }
+            class2
+        };
+
+        let class1 = &mut self.classes[cid1.idx()];
         assert_eq!(id1, class1.id);
 
         let info = MergeInfo {
@@ -707,7 +720,7 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
 
         class1.parents.extend(&class2.parents);
 
-        self.undo_log.union(id1, id2, class2.parents);
+        self.undo_log.union(id1, id2, class2.parents, cid2);
     }
 
     /// Rebuild to [`RawEGraph`] to restore congruence closure

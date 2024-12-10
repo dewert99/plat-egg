@@ -1,5 +1,5 @@
 use crate::raw::{Language, RawEGraph};
-use crate::Id;
+use crate::{ClassId, Id};
 use no_std_compat::prelude::v1::*;
 use std::fmt::Debug;
 
@@ -11,10 +11,13 @@ impl<U: Sealed> Sealed for Option<U> {}
 /// It is trivially implemented for `()`
 pub trait UndoLogT<L, D>: Default + Debug + Sealed {
     #[doc(hidden)]
-    fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id);
+    fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId);
 
     #[doc(hidden)]
-    fn union(&mut self, id1: Id, id2: Id, id2_parents: Vec<Id>);
+    fn union(&mut self, id1: Id, id2: Id, id2_parents: Vec<Id>, old_cid: ClassId);
+
+    #[doc(hidden)]
+    fn fix_id(&mut self, fixup_id: Id, cid: ClassId);
 
     #[doc(hidden)]
     fn insert_memo(&mut self, hash: u64);
@@ -31,10 +34,12 @@ pub trait UndoLogT<L, D>: Default + Debug + Sealed {
 
 impl<L, D> UndoLogT<L, D> for () {
     #[inline]
-    fn add_node(&mut self, _: &L, _: &[Id], _: Id) {}
+    fn add_node(&mut self, _: &L, _: &[Id], _: Id, _: ClassId) {}
 
     #[inline]
-    fn union(&mut self, _: Id, _: Id, _: Vec<Id>) {}
+    fn union(&mut self, _: Id, _: Id, _: Vec<Id>, _: ClassId) {}
+
+    fn fix_id(&mut self, _: Id, _: ClassId) {}
 
     #[inline]
     fn insert_memo(&mut self, _: u64) {}
@@ -51,16 +56,22 @@ impl<L, D> UndoLogT<L, D> for () {
 
 impl<L, D, U: UndoLogT<L, D>> UndoLogT<L, D> for Option<U> {
     #[inline]
-    fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id) {
+    fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId) {
         if let Some(undo) = self {
-            undo.add_node(node, canon_children, node_id)
+            undo.add_node(node, canon_children, node_id, cid)
         }
     }
 
     #[inline]
-    fn union(&mut self, id1: Id, id2: Id, id2_parents: Vec<Id>) {
+    fn union(&mut self, id1: Id, id2: Id, id2_parents: Vec<Id>, old_cid: ClassId) {
         if let Some(undo) = self {
-            undo.union(id1, id2, id2_parents)
+            undo.union(id1, id2, id2_parents, old_cid)
+        }
+    }
+
+    fn fix_id(&mut self, fixup_id: Id, cid: ClassId) {
+        if let Some(undo) = self {
+            undo.fix_id(fixup_id, cid)
         }
     }
 

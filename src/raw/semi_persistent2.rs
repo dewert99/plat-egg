@@ -1,6 +1,7 @@
-use crate::raw::util::{Entry, HashSet};
+use crate::raw::unionfind::UnionFindElt;
+use crate::raw::util::HashSet;
 use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT};
-use crate::Id;
+use crate::{ClassId, Id};
 use no_std_compat::prelude::v1::*;
 use std::fmt::Debug;
 
@@ -64,7 +65,7 @@ pub struct UndoLog {
 impl Sealed for UndoLog {}
 
 impl<L: Language, D> UndoLogT<L, D> for UndoLog {
-    fn add_node(&mut self, _: &L, canon: &[Id], node_id: Id) {
+    fn add_node(&mut self, _: &L, canon: &[Id], node_id: Id, _: ClassId) {
         debug_assert_eq!(self.undo_find.len(), usize::from(node_id));
         self.undo_find.push(UndoNode::default());
         for id in canon {
@@ -73,10 +74,12 @@ impl<L: Language, D> UndoLogT<L, D> for UndoLog {
         self.pop_parents.extend(canon)
     }
 
-    fn union(&mut self, id1: Id, id2: Id, _: Vec<Id>) {
+    fn union(&mut self, id1: Id, id2: Id, _: Vec<Id>, _: ClassId) {
         self.undo_find[usize::from(id1)].representative_of.push(id2);
         self.union_log.push(id1)
     }
+
+    fn fix_id(&mut self, _: Id, _: ClassId) {}
 
     fn insert_memo(&mut self, hash: u64) {
         self.memo_log.push(hash);
@@ -211,7 +214,8 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
         let undo = self.undo_log.as_mut_unwrap();
 
         for id in undo.pop_parents.drain(old_count..) {
-            if let Some(x) = self.classes.get_mut(&id) {
+            if let UnionFindElt::Root(cid) = self.residual.unionfind.parent(id) {
+                let x = &mut self.classes[cid.idx()];
                 // Pop canonical parents from classes in egraph
                 // Note, if `id` is not canonical then its class must have been merged into another class so it's parents will
                 // be rebuilt anyway
@@ -253,17 +257,19 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
         };
         for root in undo.dirty.iter().copied() {
             let union_find = &mut self.residual.unionfind;
-            let class = match self.classes.entry(root) {
-                Entry::Vacant(vac) => {
+            let class = match union_find.parent(root) {
+                UnionFindElt::Parent(_) => {
                     let default = RawEClass {
                         id: root,
                         raw_data: mk_data(state, root, ctx),
                         parents: Default::default(),
                     };
-                    vac.insert(default)
+                    union_find.reset_root(root, self.classes.len().into());
+                    self.classes.push(default);
+                    self.classes.last_mut().unwrap()
                 }
-                Entry::Occupied(occ) => {
-                    let res = occ.into_mut();
+                UnionFindElt::Root(cid) => {
+                    let res = &mut self.classes[cid.idx()];
                     clear(state, &mut res.raw_data, root, ctx);
                     res.parents.clear();
                     res
@@ -273,7 +279,9 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
             let parents = &mut class.parents;
             let data = &mut class.raw_data;
             visit_undo_node(root, &undo.undo_find, &mut |id, node| {
-                union_find.parents[usize::from(id)] = root;
+                if id != root {
+                    union_find.union(root, id);
+                }
                 parents.extend(&node.parents);
                 handle_eqv(state, data, id, ctx)
             });
@@ -286,8 +294,14 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
     fn pop_nodes2(&mut self, old_count: usize) {
         assert!(self.number_of_uncanonical_nodes() >= old_count);
         for id in (old_count..self.number_of_uncanonical_nodes()).map(Id::from) {
-            if self.find(id) == id {
-                self.classes.remove(&id);
+            let (root, cid) = self.residual.unionfind.find_full(id);
+            if root == id {
+                self.classes.swap_remove(cid.idx());
+                if cid.idx() != self.classes.len() {
+                    self.residual
+                        .unionfind
+                        .reset_root(self.classes[cid.idx()].id, cid)
+                }
             }
         }
         self.residual.nodes.truncate(old_count);

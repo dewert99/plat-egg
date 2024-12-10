@@ -1506,9 +1506,9 @@ impl<'x, L: Language, D, U> ExplainWith<'x, L, &'x RawEGraph<L, D, U>> {
         self.calculate_parent_distance(right, ancestor, distance_memo);
 
         // now all three share an ancestor
-        let a = self.calculate_parent_distance(ancestor, Id::from(usize::MAX), distance_memo);
-        let b = self.calculate_parent_distance(left, Id::from(usize::MAX), distance_memo);
-        let c = self.calculate_parent_distance(right, Id::from(usize::MAX), distance_memo);
+        let a = self.calculate_parent_distance(ancestor, Id::MAX, distance_memo);
+        let b = self.calculate_parent_distance(left, Id::MAX, distance_memo);
+        let c = self.calculate_parent_distance(right, Id::MAX, distance_memo);
 
         assert!(
             distance_memo.parent_distance[usize::from(ancestor)].0
@@ -1582,7 +1582,7 @@ impl<'x, L: Language, D, U> ExplainWith<'x, L, &'x RawEGraph<L, D, U>> {
                 let new_dist = dist + distance_memo.parent_distance[usize::from(parent)].1;
                 distance_memo.parent_distance[usize::from(enode)] = (parent_parent, new_dist);
             } else {
-                if ancestor == Id::from(usize::MAX) {
+                if ancestor == Id::MAX {
                     break;
                 }
                 if distance_memo.tree_depth.get(&parent).unwrap()
