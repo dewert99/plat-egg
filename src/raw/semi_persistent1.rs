@@ -181,7 +181,7 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
             .congr_dup_log
             .drain(congr_dup_count as usize..)
         {
-            self.congruence_duplicates.remove(id.into());
+            self.congruence_duplicates.remove(id);
         }
         self.pop_memo1(memo_log_count as usize);
         self.pop_unions1(

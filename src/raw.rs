@@ -6,8 +6,6 @@ mod semi_persistent;
 /// One variant of semi_persistence
 pub mod semi_persistent1;
 
-/// A simple bitset
-pub mod bitset;
 pub(crate) mod language;
 /// Another variant of semi_persistence
 pub mod semi_persistent2;

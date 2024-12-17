@@ -10,9 +10,9 @@ use std::{
     iter, slice,
 };
 
-use crate::raw::bitset::BitSet;
 use crate::raw::dhashmap::*;
 use crate::raw::UndoLogT;
+use default_vec2::BitSet;
 #[cfg(feature = "serde-1")]
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
@@ -363,7 +363,7 @@ pub struct RawEGraph<L: Language, D, U = ()> {
     /// not the canonical id of the eclass.
     pub(super) pending: Vec<Id>,
     /// `Id`s that are congruently equivalent to another `Id` that is not in this set
-    pub(super) congruence_duplicates: BitSet,
+    pub(super) congruence_duplicates: BitSet<Id>,
     pub(super) classes: Vec<RawEClass<D>>,
     pub(super) undo_log: U,
 }
@@ -790,7 +790,7 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
         loop {
             let this = get_self(outer);
             if let Some(class) = this.pending.pop() {
-                if this.congruence_duplicates.contains_mut(class.into()) {
+                if this.congruence_duplicates.contains_mut(class) {
                     // `class` is congruently equivalent to another node `croot`,
                     // so each node that has `class` as a parent also has `croot` as a parent,
                     // and they will always be added to pending together, so we only need to handle
@@ -817,7 +817,7 @@ impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
                                 // class is congruently equivalent to memo_class which isn't in
                                 // congruence_duplicates
                                 if class != memo_class {
-                                    this.congruence_duplicates.insert(class.into());
+                                    this.congruence_duplicates.insert(class);
                                     this.undo_log.add_congruence_duplicate(class);
                                 }
                             }
