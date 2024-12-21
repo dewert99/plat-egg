@@ -384,19 +384,19 @@
     }
 }
 
-<span class="doccomment">/// Trait that defines a Language whose terms will be in the [`EGraph`].</span>
+<span class="doccomment">/// Trait that defines a Language whose terms will be in the [`EGraph`](crate::raw::RawEGraph).</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Check out the [`define_language!`] macro for an easy way to create</span>
+<span class="doccomment">/// Check out the [`define_language!`](crate::define_language) macro for an easy way to create</span>
 <span class="doccomment">/// a [`Language`].</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// If you want to pretty-print expressions, you should implement [`Display`] to</span>
+<span class="doccomment">/// If you want to pretty-print expressions, you should implement [`Display`](core::fmt::Display) to</span>
 <span class="doccomment">/// display the language node&#39;s operator. For example, a language node</span>
 <span class="doccomment">/// `Add([Id; 2])` might be displayed as &quot;+&quot;.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// To parse expressions from strings you should also implement [`FromOp`].</span>
+<span class="doccomment">/// To parse expressions from strings you should also implement [`FromOp`](crate::FromOp).</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The [`define_language!`] macro automatically implements both [`Display`] and</span>
-<span class="doccomment">/// [`FromOp`].</span>
+<span class="doccomment">/// The [`define_language!`](crate::define_language)  macro automatically implements both</span>
+<span class="doccomment">/// [`Display`](core::fmt::Display) and [`FromOp`](crate::FromOp).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// See [`SymbolLang`] for quick-and-dirty use cases.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::len_without_is_empty</span>)]</span>

@@ -26,6 +26,7 @@
 <span id="20">20</span>
 <span id="21">21</span>
 <span id="22">22</span>
+<span id="23">23</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">dhashmap</span>;
 <span class="kw">mod</span> <span class="ident">eclass</span>;
 <span class="kw">mod</span> <span class="ident">egraph</span>;
@@ -34,19 +35,20 @@
 <span class="doccomment">/// One variant of semi_persistence</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">semi_persistent1</span>;
 
-<span class="doccomment">/// A simple bitset</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bitset</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">language</span>;
 <span class="doccomment">/// Another variant of semi_persistence</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">semi_persistent2</span>;
 <span class="kw">mod</span> <span class="ident">unionfind</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">util</span>;
 
+<span class="doccomment">/// Types and traits for specify whether path compression is supported</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">reflect_const</span>;
+
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">eclass::RawEClass</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">egraph</span>::{<span class="ident">EGraphResidual</span>, <span class="ident">RawEGraph</span>, <span class="ident">UnionInfo</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">language</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">semi_persistent::Sealed</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">semi_persistent</span>::{<span class="ident">AsUnwrap</span>, <span class="ident">UndoLogT</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">semi_persistent</span>::{<span class="ident">AsUnwrap</span>, <span class="ident">UndoLogPC</span>, <span class="ident">UndoLogT</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">unionfind::UnionFind</span>;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="plat_egg" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0 (4b91a6ea7 2022-08-08)" ></div>

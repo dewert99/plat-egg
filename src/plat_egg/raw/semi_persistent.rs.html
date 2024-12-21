@@ -144,8 +144,36 @@
 <span id="138">138</span>
 <span id="139">139</span>
 <span id="140">140</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::raw</span>::{<span class="ident">Language</span>, <span class="ident">RawEGraph</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Id</span>;
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::raw::reflect_const</span>::{<span class="ident">PathCompress</span>, <span class="ident">PathCompressT</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::raw</span>::{<span class="ident">Language</span>, <span class="ident">RawEGraph</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ClassId</span>, <span class="ident">Id</span>};
 <span class="kw">use</span> <span class="ident">no_std_compat::prelude::v1</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
 
@@ -155,12 +183,22 @@
 
 <span class="doccomment">/// A sealed trait for types that can be used for `push`/`pop` APIs</span>
 <span class="doccomment">/// It is trivially implemented for `()`</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UndoLogT</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Sealed</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UndoLogPC</span> {
+    <span class="doccomment">/// When this type of undo log allows for path compression</span>
+    <span class="kw">type</span> <span class="ident">AllowPathCompress</span>: <span class="ident">PathCompressT</span>;
+}
+
+<span class="doccomment">/// A sealed trait for types that can be used for `push`/`pop` APIs</span>
+<span class="doccomment">/// It is trivially implemented for `()`</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UndoLogT</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Sealed</span> <span class="op">+</span> <span class="ident">UndoLogPC</span> {
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="ident">canon_children</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="ident">node_id</span>: <span class="ident">Id</span>);
+    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="ident">canon_children</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="ident">node_id</span>: <span class="ident">Id</span>, <span class="ident">cid</span>: <span class="ident">ClassId</span>);
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id1</span>: <span class="ident">Id</span>, <span class="ident">id2</span>: <span class="ident">Id</span>, <span class="ident">id2_parents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>);
+    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id1</span>: <span class="ident">Id</span>, <span class="ident">id2</span>: <span class="ident">Id</span>, <span class="ident">id2_parents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>, <span class="ident">old_cid</span>: <span class="ident">ClassId</span>);
+
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">fix_id</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fixup_id</span>: <span class="ident">Id</span>, <span class="ident">cid</span>: <span class="ident">ClassId</span>);
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">insert_memo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">hash</span>: <span class="ident">u64</span>);
@@ -175,12 +213,18 @@
     <span class="kw">fn</span> <span class="ident">is_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
 }
 
+<span class="kw">impl</span> <span class="ident">UndoLogPC</span> <span class="kw">for</span> () {
+    <span class="kw">type</span> <span class="ident">AllowPathCompress</span> <span class="op">=</span> <span class="ident">PathCompress</span><span class="op">&lt;</span><span class="bool-val">true</span><span class="op">&gt;</span>;
+}
+
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">UndoLogT</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">for</span> () {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="kw">_</span>: <span class="ident">Id</span>) {}
+    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">ClassId</span>) {}
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>) {}
+    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>, <span class="kw">_</span>: <span class="ident">ClassId</span>) {}
+
+    <span class="kw">fn</span> <span class="ident">fix_id</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Id</span>, <span class="kw">_</span>: <span class="ident">ClassId</span>) {}
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">insert_memo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">u64</span>) {}
@@ -195,18 +239,28 @@
     }
 }
 
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">U</span>: <span class="ident">UndoLogPC</span><span class="op">&gt;</span> <span class="ident">UndoLogPC</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">AllowPathCompress</span> <span class="op">=</span> <span class="ident">U::AllowPathCompress</span>;
+}
+
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span>, <span class="ident">U</span>: <span class="ident">UndoLogT</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">UndoLogT</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="ident">canon_children</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="ident">node_id</span>: <span class="ident">Id</span>) {
+    <span class="kw">fn</span> <span class="ident">add_node</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="ident">L</span>, <span class="ident">canon_children</span>: <span class="kw-2">&amp;</span>[<span class="ident">Id</span>], <span class="ident">node_id</span>: <span class="ident">Id</span>, <span class="ident">cid</span>: <span class="ident">ClassId</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">undo</span>) <span class="op">=</span> <span class="self">self</span> {
-            <span class="ident">undo</span>.<span class="ident">add_node</span>(<span class="ident">node</span>, <span class="ident">canon_children</span>, <span class="ident">node_id</span>)
+            <span class="ident">undo</span>.<span class="ident">add_node</span>(<span class="ident">node</span>, <span class="ident">canon_children</span>, <span class="ident">node_id</span>, <span class="ident">cid</span>)
         }
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id1</span>: <span class="ident">Id</span>, <span class="ident">id2</span>: <span class="ident">Id</span>, <span class="ident">id2_parents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">union</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id1</span>: <span class="ident">Id</span>, <span class="ident">id2</span>: <span class="ident">Id</span>, <span class="ident">id2_parents</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Id</span><span class="op">&gt;</span>, <span class="ident">old_cid</span>: <span class="ident">ClassId</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">undo</span>) <span class="op">=</span> <span class="self">self</span> {
-            <span class="ident">undo</span>.<span class="ident">union</span>(<span class="ident">id1</span>, <span class="ident">id2</span>, <span class="ident">id2_parents</span>)
+            <span class="ident">undo</span>.<span class="ident">union</span>(<span class="ident">id1</span>, <span class="ident">id2</span>, <span class="ident">id2_parents</span>, <span class="ident">old_cid</span>)
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">fix_id</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fixup_id</span>: <span class="ident">Id</span>, <span class="ident">cid</span>: <span class="ident">ClassId</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">undo</span>) <span class="op">=</span> <span class="self">self</span> {
+            <span class="ident">undo</span>.<span class="ident">fix_id</span>(<span class="ident">fixup_id</span>, <span class="ident">cid</span>)
         }
     }
 
