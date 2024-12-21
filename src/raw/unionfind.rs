@@ -51,9 +51,11 @@ impl Debug for RawUnionFindElt {
 
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde-1", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde-1", serde(bound = ""))]
 /// Data structure that stores disjoint sets of `Id`s each with a representative
 pub struct UnionFind<P: PathCompressT = PathCompress<true>> {
     pub(super) parents: Vec<RawUnionFindElt>,
+    #[cfg_attr(feature = "serde-1", serde(skip))]
     phantom: PhantomData<P>,
 }
 

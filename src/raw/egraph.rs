@@ -36,6 +36,10 @@ impl<'a> IntoIterator for Parents<'a> {
 /// See [`RawEGraph::classes_mut`], [`RawEGraph::get_class_mut`]
 #[derive(Clone)]
 #[cfg_attr(feature = "serde-1", derive(Serialize, Deserialize))]
+#[cfg_attr(
+    feature = "serde-1",
+    serde(bound(serialize = "L: Serialize", deserialize = "L: Deserialize<'de>"))
+)]
 pub struct EGraphResidual<L: Language, P: PathCompressT = PathCompress<true>> {
     pub(super) unionfind: UnionFind<P>,
     /// Stores the original node represented by each non-canonical id
