@@ -1,4 +1,5 @@
 use crate::raw::reflect_const::PathCompress;
+use crate::raw::semi_persistent::UndoLogPC;
 use crate::raw::unionfind::UnionFindElt;
 use crate::raw::util::HashSet;
 use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT};
@@ -65,9 +66,11 @@ pub struct UndoLog {
 
 impl Sealed for UndoLog {}
 
-impl<L: Language, D> UndoLogT<L, D> for UndoLog {
+impl UndoLogPC for UndoLog {
     type AllowPathCompress = PathCompress<true>;
+}
 
+impl<L: Language, D> UndoLogT<L, D> for UndoLog {
     fn add_node(&mut self, _: &L, canon: &[Id], node_id: Id, _: ClassId) {
         debug_assert_eq!(self.undo_find.len(), usize::from(node_id));
         self.undo_find.push(UndoNode::default());

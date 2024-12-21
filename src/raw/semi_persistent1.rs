@@ -1,4 +1,5 @@
 use crate::raw::reflect_const::PathCompress;
+use crate::raw::semi_persistent::UndoLogPC;
 use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT};
 use crate::{ClassId, Id};
 use core::mem;
@@ -70,9 +71,11 @@ impl Default for UndoLog {
 
 impl Sealed for UndoLog {}
 
-impl<L: Language, D> UndoLogT<L, D> for UndoLog {
+impl UndoLogPC for UndoLog {
     type AllowPathCompress = PathCompress<false>;
+}
 
+impl<L: Language, D> UndoLogT<L, D> for UndoLog {
     fn add_node(&mut self, _: &L, canon_children: &[Id], _: Id, _: ClassId) {
         self.pop_parents.extend(canon_children);
         let log = self.union_log.last_mut().unwrap();

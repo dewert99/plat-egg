@@ -17,6 +17,7 @@ use raw::semi_persistent1 as sp;
 #[cfg(not(feature = "push-pop-alt"))]
 use raw::semi_persistent2 as sp;
 
+use crate::raw::UndoLogPC;
 use sp::UndoLog;
 type PushInfo = (sp::PushInfo, explain::PushInfo, usize);
 /** A data structure to keep track of equalities between expressions.
@@ -108,7 +109,7 @@ impl<L: Language, N: Analysis<L>> Debug for EGraph<L, N> {
 }
 
 impl<L: Language, N: Analysis<L>> Deref for EGraph<L, N> {
-    type Target = EGraphResidual<L>;
+    type Target = EGraphResidual<L, <UndoLog as UndoLogPC>::AllowPathCompress>;
 
     #[inline]
     fn deref(&self) -> &Self::Target {

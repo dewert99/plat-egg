@@ -10,9 +10,14 @@ impl<U: Sealed> Sealed for Option<U> {}
 
 /// A sealed trait for types that can be used for `push`/`pop` APIs
 /// It is trivially implemented for `()`
-pub trait UndoLogT<L, D>: Default + Debug + Sealed {
+pub trait UndoLogPC {
     /// When this type of undo log allows for path compression
     type AllowPathCompress: PathCompressT;
+}
+
+/// A sealed trait for types that can be used for `push`/`pop` APIs
+/// It is trivially implemented for `()`
+pub trait UndoLogT<L, D>: Default + Debug + Sealed + UndoLogPC {
     #[doc(hidden)]
     fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId);
 
@@ -35,9 +40,11 @@ pub trait UndoLogT<L, D>: Default + Debug + Sealed {
     fn is_enabled(&self) -> bool;
 }
 
-impl<L, D> UndoLogT<L, D> for () {
+impl UndoLogPC for () {
     type AllowPathCompress = PathCompress<true>;
+}
 
+impl<L, D> UndoLogT<L, D> for () {
     #[inline]
     fn add_node(&mut self, _: &L, _: &[Id], _: Id, _: ClassId) {}
 
@@ -59,9 +66,11 @@ impl<L, D> UndoLogT<L, D> for () {
     }
 }
 
-impl<L, D, U: UndoLogT<L, D>> UndoLogT<L, D> for Option<U> {
+impl<U: UndoLogPC> UndoLogPC for Option<U> {
     type AllowPathCompress = U::AllowPathCompress;
+}
 
+impl<L, D, U: UndoLogT<L, D>> UndoLogT<L, D> for Option<U> {
     #[inline]
     fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId) {
         if let Some(undo) = self {

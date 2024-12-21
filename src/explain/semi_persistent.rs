@@ -1,4 +1,5 @@
 use crate::explain::{Connection, Explain};
+use crate::raw::reflect_const::PathCompressT;
 use crate::raw::EGraphResidual;
 use crate::{Id, Language};
 use no_std_compat::prelude::v1::*;
@@ -28,11 +29,11 @@ impl<L: Language> Explain<L> {
         PushInfo(self.undo_log.as_ref().unwrap().len())
     }
 
-    pub(crate) fn pop(
+    pub(crate) fn pop<P: PathCompressT>(
         &mut self,
         info: PushInfo,
         number_of_uncanon_nodes: usize,
-        egraph: &EGraphResidual<L>,
+        egraph: &EGraphResidual<L, P>,
     ) {
         for id in self.undo_log.as_mut().unwrap().drain(info.0..).rev() {
             let node1 = &mut self.explainfind[usize::from(id)];

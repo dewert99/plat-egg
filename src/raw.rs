@@ -19,5 +19,5 @@ pub use eclass::RawEClass;
 pub use egraph::{EGraphResidual, RawEGraph, UnionInfo};
 pub use language::*;
 use semi_persistent::Sealed;
-pub use semi_persistent::{AsUnwrap, UndoLogT};
+pub use semi_persistent::{AsUnwrap, UndoLogPC, UndoLogT};
 pub use unionfind::UnionFind;
