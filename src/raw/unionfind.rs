@@ -170,7 +170,7 @@ mod tests {
         let n = 10;
         let id = Id::from;
 
-        let mut uf = UnionFind::default();
+        let mut uf: UnionFind = UnionFind::default();
         for i in 0..n {
             uf.make_set_with_id(i.into());
         }
