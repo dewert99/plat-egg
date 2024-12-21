@@ -11,6 +11,7 @@ use std::{
 };
 
 use crate::raw::dhashmap::*;
+use crate::raw::reflect_const::{PathCompress, PathCompressT};
 use crate::raw::UndoLogT;
 use default_vec2::BitSet;
 #[cfg(feature = "serde-1")]
@@ -35,8 +36,8 @@ impl<'a> IntoIterator for Parents<'a> {
 /// See [`RawEGraph::classes_mut`], [`RawEGraph::get_class_mut`]
 #[derive(Clone)]
 #[cfg_attr(feature = "serde-1", derive(Serialize, Deserialize))]
-pub struct EGraphResidual<L: Language> {
-    pub(super) unionfind: UnionFind,
+pub struct EGraphResidual<L: Language, P: PathCompressT = PathCompress<true>> {
+    pub(super) unionfind: UnionFind<P>,
     /// Stores the original node represented by each non-canonical id
     pub(super) nodes: Vec<L>,
     /// Stores each enode's `Id`, not the `Id` of the eclass.
@@ -46,7 +47,7 @@ pub struct EGraphResidual<L: Language> {
     pub(super) memo: DHashMap<L, Id>,
 }
 
-impl<L: Language> EGraphResidual<L> {
+impl<L: Language, P: PathCompressT> EGraphResidual<L, P> {
     /// Pick a representative term for a given Id.
     ///
     /// Calling this function on an uncanonical `Id` returns a representative based on how it
@@ -308,7 +309,7 @@ impl<L: Language> EGraphResidual<L> {
     }
 
     /// Creates a [`Dot`] to visualize this egraph. See [`Dot`].
-    pub fn dot(&self) -> Dot<'_, L> {
+    pub fn dot(&self) -> Dot<'_, L, P> {
         Dot {
             egraph: self,
             config: vec![],
@@ -317,8 +318,15 @@ impl<L: Language> EGraphResidual<L> {
     }
 }
 
+impl<L: Language> EGraphResidual<L, PathCompress<false>> {
+    /// Return the direct parent from the union find without path compression
+    pub fn find_direct_parent(&self, id: Id) -> Id {
+        self.unionfind.parent_id(id)
+    }
+}
+
 // manual debug impl to avoid L: Language bound on EGraph defn
-impl<L: Language> Debug for EGraphResidual<L> {
+impl<L: Language, P: PathCompressT> Debug for EGraphResidual<L, P> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("EGraphResidual")
             .field("unionfind", &self.unionfind)
@@ -356,9 +364,9 @@ to properly handle this data
  **/
 #[derive(Clone)]
 #[cfg_attr(feature = "serde-1", derive(Serialize, Deserialize))]
-pub struct RawEGraph<L: Language, D, U = ()> {
+pub struct RawEGraph<L: Language, D, U: UndoLogT<L, D> = ()> {
     #[cfg_attr(feature = "serde-1", serde(flatten))]
-    pub(super) residual: EGraphResidual<L>,
+    pub(super) residual: EGraphResidual<L, U::AllowPathCompress>,
     /// Nodes which need to be processed for rebuilding. The `Id` is the `Id` of the enode,
     /// not the canonical id of the eclass.
     pub(super) pending: Vec<Id>,
@@ -368,7 +376,7 @@ pub struct RawEGraph<L: Language, D, U = ()> {
     pub(super) undo_log: U,
 }
 
-impl<L: Language, D, U: Default> Default for RawEGraph<L, D, U> {
+impl<L: Language, D, U: Default + UndoLogT<L, D>> Default for RawEGraph<L, D, U> {
     fn default() -> Self {
         let residual = EGraphResidual {
             unionfind: Default::default(),
@@ -385,8 +393,8 @@ impl<L: Language, D, U: Default> Default for RawEGraph<L, D, U> {
     }
 }
 
-impl<L: Language, D, U> Deref for RawEGraph<L, D, U> {
-    type Target = EGraphResidual<L>;
+impl<L: Language, D, U: UndoLogT<L, D>> Deref for RawEGraph<L, D, U> {
+    type Target = EGraphResidual<L, U::AllowPathCompress>;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
@@ -394,7 +402,7 @@ impl<L: Language, D, U> Deref for RawEGraph<L, D, U> {
     }
 }
 
-impl<L: Language, D, U> DerefMut for RawEGraph<L, D, U> {
+impl<L: Language, D, U: UndoLogT<L, D>> DerefMut for RawEGraph<L, D, U> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.residual
@@ -402,7 +410,7 @@ impl<L: Language, D, U> DerefMut for RawEGraph<L, D, U> {
 }
 
 // manual debug impl to avoid L: Language bound on EGraph defn
-impl<L: Language, D: Debug, U> Debug for RawEGraph<L, D, U> {
+impl<L: Language, D: Debug, U: UndoLogT<L, D>> Debug for RawEGraph<L, D, U> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let classes: BTreeMap<_, _> = self
             .classes
@@ -428,7 +436,7 @@ impl<L: Language, D: Debug, U> Debug for RawEGraph<L, D, U> {
     }
 }
 
-impl<L: Language, D, U> RawEGraph<L, D, U> {
+impl<L: Language, D, U: UndoLogT<L, D>> RawEGraph<L, D, U> {
     /// Returns an iterator over the eclasses in the egraph.
     pub fn classes(&self) -> impl ExactSizeIterator<Item = &RawEClass<D>> {
         self.classes.iter()
@@ -440,7 +448,7 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
         &mut self,
     ) -> (
         impl ExactSizeIterator<Item = &mut RawEClass<D>>,
-        &mut EGraphResidual<L>,
+        &mut EGraphResidual<L, U::AllowPathCompress>,
     ) {
         let iter = self.classes.iter_mut();
         (iter, &mut self.residual)
@@ -470,7 +478,10 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
     pub fn get_class_mut<I: BorrowMut<Id>>(
         &mut self,
         mut id: I,
-    ) -> (&mut RawEClass<D>, &mut EGraphResidual<L>) {
+    ) -> (
+        &mut RawEClass<D>,
+        &mut EGraphResidual<L, U::AllowPathCompress>,
+    ) {
         let id = id.borrow_mut();
         let (nid, cid) = self.unionfind.find_mut_full(*id);
         *id = nid;
@@ -481,7 +492,10 @@ impl<L: Language, D, U> RawEGraph<L, D, U> {
     pub fn get_class_mut_with_cannon(
         &mut self,
         id: Id,
-    ) -> (&mut RawEClass<D>, &mut EGraphResidual<L>) {
+    ) -> (
+        &mut RawEClass<D>,
+        &mut EGraphResidual<L, U::AllowPathCompress>,
+    ) {
         let cid = self.unionfind.find_canon(id);
         (&mut self.classes[cid.idx()], &mut self.residual)
     }
@@ -900,9 +914,9 @@ impl<L: Language, U: UndoLogT<L, ()>> RawEGraph<L, (), U> {
     }
 }
 
-struct EGraphUncanonicalDump<'a, L: Language>(&'a EGraphResidual<L>);
+struct EGraphUncanonicalDump<'a, L: Language, P: PathCompressT>(&'a EGraphResidual<L, P>);
 
-impl<'a, L: Language> Debug for EGraphUncanonicalDump<'a, L> {
+impl<'a, L: Language, P: PathCompressT> Debug for EGraphUncanonicalDump<'a, L, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (id, node) in self.0.uncanonical_nodes() {
             writeln!(f, "{}: {:?} (root={})", id, node, self.0.find(id))?
@@ -911,9 +925,9 @@ impl<'a, L: Language> Debug for EGraphUncanonicalDump<'a, L> {
     }
 }
 
-struct EGraphDump<'a, L: Language, D, U>(&'a RawEGraph<L, D, U>);
+struct EGraphDump<'a, L: Language, D, U: UndoLogT<L, D>>(&'a RawEGraph<L, D, U>);
 
-impl<'a, L: Language, D: Debug, U> Debug for EGraphDump<'a, L, D, U> {
+impl<'a, L: Language, D: Debug, U: UndoLogT<L, D>> Debug for EGraphDump<'a, L, D, U> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ids: Vec<Id> = self.0.classes().map(|c| c.id).collect();
         ids.sort();

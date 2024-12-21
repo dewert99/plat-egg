@@ -1,3 +1,4 @@
+use crate::raw::reflect_const::PathCompress;
 use crate::raw::unionfind::UnionFindElt;
 use crate::raw::util::HashSet;
 use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT};
@@ -65,6 +66,8 @@ pub struct UndoLog {
 impl Sealed for UndoLog {}
 
 impl<L: Language, D> UndoLogT<L, D> for UndoLog {
+    type AllowPathCompress = PathCompress<true>;
+
     fn add_node(&mut self, _: &L, canon: &[Id], node_id: Id, _: ClassId) {
         debug_assert_eq!(self.undo_find.len(), usize::from(node_id));
         self.undo_find.push(UndoNode::default());
@@ -101,7 +104,7 @@ impl<L: Language, D> UndoLogT<L, D> for UndoLog {
     }
 }
 
-impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
+impl<L: Language, D, U: AsUnwrap<UndoLog> + UndoLogT<L, D>> RawEGraph<L, D, U> {
     /// Create a [`PushInfo`] representing the current state of the egraph
     /// which can later be passed into [`raw_pop2`](RawEGraph::raw_pop2)
     ///
@@ -357,7 +360,7 @@ impl<'a, L> UndoCtx<'a, L> {
     }
 }
 
-impl<L: Language, U: AsUnwrap<UndoLog>> RawEGraph<L, (), U> {
+impl<L: Language, U: AsUnwrap<UndoLog> + UndoLogT<L, ()>> RawEGraph<L, (), U> {
     /// Simplified version of [`raw_pop2`](RawEGraph::raw_pop2) for egraphs without eclass data
     pub fn pop2(&mut self, info: PushInfo) {
         self.raw_pop2(

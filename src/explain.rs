@@ -15,7 +15,7 @@ use std::mem;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
-use crate::raw::RawEGraph;
+use crate::raw::{RawEGraph, UndoLogT};
 use symbolic_expressions::Sexp;
 
 type ProofCost = Saturating<usize>;
@@ -1094,7 +1094,7 @@ impl<'a, L: Language, X> DerefMut for ExplainWith<'a, L, X> {
     }
 }
 
-impl<'x, L: Language, D, U> ExplainWith<'x, L, &'x RawEGraph<L, D, U>> {
+impl<'x, L: Language, D, U: UndoLogT<L, D>> ExplainWith<'x, L, &'x RawEGraph<L, D, U>> {
     pub(crate) fn node(&self, node_id: Id) -> &L {
         self.raw.id_to_node(node_id)
     }

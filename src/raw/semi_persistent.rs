@@ -1,3 +1,4 @@
+use crate::raw::reflect_const::{PathCompress, PathCompressT};
 use crate::raw::{Language, RawEGraph};
 use crate::{ClassId, Id};
 use no_std_compat::prelude::v1::*;
@@ -10,6 +11,8 @@ impl<U: Sealed> Sealed for Option<U> {}
 /// A sealed trait for types that can be used for `push`/`pop` APIs
 /// It is trivially implemented for `()`
 pub trait UndoLogT<L, D>: Default + Debug + Sealed {
+    /// When this type of undo log allows for path compression
+    type AllowPathCompress: PathCompressT;
     #[doc(hidden)]
     fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId);
 
@@ -33,6 +36,8 @@ pub trait UndoLogT<L, D>: Default + Debug + Sealed {
 }
 
 impl<L, D> UndoLogT<L, D> for () {
+    type AllowPathCompress = PathCompress<true>;
+
     #[inline]
     fn add_node(&mut self, _: &L, _: &[Id], _: Id, _: ClassId) {}
 
@@ -55,6 +60,8 @@ impl<L, D> UndoLogT<L, D> for () {
 }
 
 impl<L, D, U: UndoLogT<L, D>> UndoLogT<L, D> for Option<U> {
+    type AllowPathCompress = U::AllowPathCompress;
+
     #[inline]
     fn add_node(&mut self, node: &L, canon_children: &[Id], node_id: Id, cid: ClassId) {
         if let Some(undo) = self {

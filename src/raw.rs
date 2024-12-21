@@ -12,6 +12,9 @@ pub mod semi_persistent2;
 mod unionfind;
 pub(crate) mod util;
 
+/// Types and traits for specify whether path compression is supported
+pub mod reflect_const;
+
 pub use eclass::RawEClass;
 pub use egraph::{EGraphResidual, RawEGraph, UnionInfo};
 pub use language::*;

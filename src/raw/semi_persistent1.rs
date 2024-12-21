@@ -1,4 +1,5 @@
-use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT, UnionFind};
+use crate::raw::reflect_const::PathCompress;
+use crate::raw::{AsUnwrap, Language, RawEClass, RawEGraph, Sealed, UndoLogT};
 use crate::{ClassId, Id};
 use core::mem;
 use no_std_compat::prelude::v1::*;
@@ -44,8 +45,6 @@ struct UnionInfo {
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde-1", derive(serde::Serialize, serde::Deserialize))]
 pub struct UndoLog {
-    // Mirror of the union find without path compression
-    undo_find: UnionFind,
     pop_parents: Vec<Id>,
     union_log: Vec<UnionInfo>,
     memo_log: Vec<u64>,
@@ -55,7 +54,6 @@ pub struct UndoLog {
 impl Default for UndoLog {
     fn default() -> Self {
         UndoLog {
-            undo_find: Default::default(),
             pop_parents: Default::default(),
             union_log: vec![UnionInfo {
                 old_id: Id::from(0),
@@ -73,17 +71,16 @@ impl Default for UndoLog {
 impl Sealed for UndoLog {}
 
 impl<L: Language, D> UndoLogT<L, D> for UndoLog {
-    fn add_node(&mut self, _: &L, canon_children: &[Id], node_id: Id, cid: ClassId) {
-        let new = self.undo_find.make_set_with_id(cid);
-        debug_assert_eq!(new, node_id);
+    type AllowPathCompress = PathCompress<false>;
+
+    fn add_node(&mut self, _: &L, canon_children: &[Id], _: Id, _: ClassId) {
         self.pop_parents.extend(canon_children);
         let log = self.union_log.last_mut().unwrap();
         log.parents_added_after += canon_children.len() as u32;
         log.nodes_added_after += 1;
     }
 
-    fn union(&mut self, id1: Id, id2: Id, old_parents: Vec<Id>, old_cid: ClassId) {
-        self.undo_find.union(id1, id2);
+    fn union(&mut self, _: Id, id2: Id, old_parents: Vec<Id>, old_cid: ClassId) {
         self.union_log.push(UnionInfo {
             old_id: id2,
             parents_added_after: 0,
@@ -93,9 +90,7 @@ impl<L: Language, D> UndoLogT<L, D> for UndoLog {
         })
     }
 
-    fn fix_id(&mut self, fixup_id: Id, cid: ClassId) {
-        self.undo_find.reset_root(fixup_id, cid)
-    }
+    fn fix_id(&mut self, _: Id, _: ClassId) {}
 
     fn insert_memo(&mut self, hash: u64) {
         self.memo_log.push(hash);
@@ -109,7 +104,6 @@ impl<L: Language, D> UndoLogT<L, D> for UndoLog {
         self.union_log.truncate(1);
         self.union_log[0].parents_added_after = 0;
         self.memo_log.clear();
-        self.undo_find.clear();
         self.congr_dup_log.clear();
     }
 
@@ -119,7 +113,7 @@ impl<L: Language, D> UndoLogT<L, D> for UndoLog {
     }
 }
 
-impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
+impl<L: Language, D, U: AsUnwrap<UndoLog> + UndoLogT<L, D>> RawEGraph<L, D, U> {
     /// Create a [`PushInfo`] representing the current state of the egraph
     /// which can later be passed into [`raw_pop1`](RawEGraph::raw_pop1)
     ///
@@ -193,11 +187,6 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
         self.pop_nodes1(node_count as usize);
     }
 
-    /// Return the direct parent from the union find without path compression
-    pub fn find_direct_parent(&self, id: Id) -> Id {
-        self.undo_log.as_unwrap().undo_find.parent_id(id)
-    }
-
     fn pop_memo1(&mut self, old_count: usize) {
         assert!(self.memo.len() >= old_count);
         let memo_log = &mut self.undo_log.as_mut_unwrap().memo_log;
@@ -215,12 +204,12 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
         mut split: impl FnMut(&mut D, Id, Id) -> D,
     ) {
         let undo = self.undo_log.as_mut_unwrap();
-        let mut node_count_rem = (undo.undo_find.size() - node_count) as u32;
+        let mut node_count_rem = (self.residual.unionfind.size() - node_count) as u32;
         assert!(self.residual.number_of_uncanonical_nodes() >= old_count);
         for info in undo.union_log.drain(old_count..).rev() {
             for _ in 0..info.parents_added_after {
                 let id = undo.pop_parents.pop().unwrap();
-                self.classes[undo.undo_find.find_canon(id).idx()]
+                self.classes[self.residual.unionfind.find_canon(id).idx()]
                     .parents
                     .pop();
             }
@@ -228,11 +217,11 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
                 .truncate(self.classes.len() - info.nodes_added_after as usize);
             node_count_rem -= info.nodes_added_after;
             let old_id = info.old_id;
-            let new_id = undo.undo_find.parent_id(old_id);
+            let new_id = self.residual.unionfind.parent_id(old_id);
             debug_assert_ne!(new_id, old_id);
-            debug_assert_eq!(undo.undo_find.find(new_id), new_id);
-            let new_cid = undo.undo_find.find_canon(new_id);
-            undo.undo_find.reset_root(old_id, info.old_cid);
+            debug_assert_eq!(self.residual.unionfind.find(new_id), new_id);
+            let new_cid = self.residual.unionfind.find_canon(new_id);
+            self.residual.unionfind.reset_root(old_id, info.old_cid);
             let new_class = &mut self.classes[new_cid.idx()];
             debug_assert_eq!(new_class.id, new_id);
             let cut = new_class.parents.len() - info.old_parents.len();
@@ -246,7 +235,8 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
             };
             if info.old_cid.idx() != self.classes.len() {
                 mem::swap(&mut self.classes[info.old_cid.idx()], &mut class);
-                undo.undo_find
+                self.residual
+                    .unionfind
                     .reset_root(class.id, ClassId::from(self.classes.len()))
             }
             self.classes.push(class)
@@ -254,7 +244,7 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
         let parent_rem = undo.pop_parents.len() - pop_parents_count;
         for _ in 0..parent_rem {
             let id = undo.pop_parents.pop().unwrap();
-            self.classes[undo.undo_find.find_canon(id).idx()]
+            self.classes[self.residual.unionfind.find_canon(id).idx()]
                 .parents
                 .pop();
         }
@@ -267,17 +257,12 @@ impl<L: Language, D, U: AsUnwrap<UndoLog>> RawEGraph<L, D, U> {
 
     fn pop_nodes1(&mut self, old_count: usize) {
         assert!(self.number_of_uncanonical_nodes() >= old_count);
-        let undo = self.undo_log.as_mut_unwrap();
-        undo.undo_find.parents.truncate(old_count);
-        self.residual
-            .unionfind
-            .parents
-            .clone_from(&undo.undo_find.parents);
+        self.residual.unionfind.parents.truncate(old_count);
         self.residual.nodes.truncate(old_count);
     }
 }
 
-impl<L: Language, U: AsUnwrap<UndoLog>> RawEGraph<L, (), U> {
+impl<L: Language, U: AsUnwrap<UndoLog> + UndoLogT<L, ()>> RawEGraph<L, (), U> {
     /// Simplified version of [`raw_pop1`](RawEGraph::raw_pop1) for egraphs without eclass data
     pub fn pop1(&mut self, info: PushInfo) {
         self.raw_pop1(info, |_, _, _| ())
