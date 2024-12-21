@@ -1,4 +1,6 @@
+use crate::raw::reflect_const::{PathCompress, PathCompressT};
 use crate::{ClassId, Id, U31_MAX};
+use core::marker::PhantomData;
 use no_std_compat::prelude::v1::*;
 use std::fmt::{Debug, Formatter};
 
@@ -49,12 +51,15 @@ impl Debug for RawUnionFindElt {
 
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde-1", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde-1", serde(bound = ""))]
 /// Data structure that stores disjoint sets of `Id`s each with a representative
-pub struct UnionFind {
+pub struct UnionFind<P: PathCompressT = PathCompress<true>> {
     pub(super) parents: Vec<RawUnionFindElt>,
+    #[cfg_attr(feature = "serde-1", serde(skip))]
+    phantom: PhantomData<P>,
 }
 
-impl UnionFind {
+impl<P: PathCompressT> UnionFind<P> {
     /// Creates a singleton set and returns its representative
     pub fn make_set(&mut self) -> Id {
         self.make_set_with_id(0.into())
@@ -123,6 +128,9 @@ impl UnionFind {
     }
 
     pub(super) fn find_mut_full(&mut self, mut current: Id) -> (Id, ClassId) {
+        if !P::PATH_COMPRESS {
+            return self.find_full(current);
+        }
         let canon = self.find(current);
         loop {
             match self.parent(current) {
@@ -164,7 +172,7 @@ mod tests {
         let n = 10;
         let id = Id::from;
 
-        let mut uf = UnionFind::default();
+        let mut uf: UnionFind = UnionFind::default();
         for i in 0..n {
             uf.make_set_with_id(i.into());
         }

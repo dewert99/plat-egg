@@ -9,6 +9,7 @@ Use the [`Dot`] struct to visualize an [`EGraph`](crate::EGraph)
 use no_std_compat::prelude::v1::*;
 use std::fmt::{self, Debug, Display, Formatter};
 
+use crate::raw::reflect_const::PathCompressT;
 use crate::{raw::EGraphResidual, raw::Language};
 
 /**
@@ -48,8 +49,8 @@ instead of to its own eclass.
 
 [GraphViz]: https://graphviz.gitlab.io/
 **/
-pub struct Dot<'a, L: Language> {
-    pub(crate) egraph: &'a EGraphResidual<L>,
+pub struct Dot<'a, L: Language, P: PathCompressT> {
+    pub(crate) egraph: &'a EGraphResidual<L, P>,
     /// A list of strings to be output top part of the dot file.
     pub config: Vec<String>,
     /// Whether or not to anchor the edges in the output.
@@ -57,7 +58,7 @@ pub struct Dot<'a, L: Language> {
     pub use_anchors: bool,
 }
 
-impl<'a, L> Dot<'a, L>
+impl<'a, L, P: PathCompressT> Dot<'a, L, P>
 where
     L: Language + Display,
 {
@@ -100,7 +101,7 @@ mod std_only {
     use std::io::{Error, ErrorKind, Result, Write};
     use std::path::Path;
 
-    impl<'a, L: Language + Display> Dot<'a, L> {
+    impl<'a, L: Language + Display, P: PathCompressT> Dot<'a, L, P> {
         /// Writes the `Dot` to a .dot file with the given filename.
         /// Does _not_ require a `dot` binary.
         pub fn to_dot(&self, filename: impl AsRef<Path>) -> Result<()> {
@@ -177,13 +178,13 @@ mod std_only {
     }
 }
 
-impl<'a, L: Language> Debug for Dot<'a, L> {
+impl<'a, L: Language, P: PathCompressT> Debug for Dot<'a, L, P> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         f.debug_tuple("Dot").field(self.egraph).finish()
     }
 }
 
-impl<'a, L> Display for Dot<'a, L>
+impl<'a, L, P: PathCompressT> Display for Dot<'a, L, P>
 where
     L: Language + Display,
 {
